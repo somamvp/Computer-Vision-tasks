@@ -17,4 +17,4 @@ yolov5s (small) model is default / n,s,m,l,x model exists
 
 Small or Medium is recommended
 
-test=1
+test=0

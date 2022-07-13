@@ -1,0 +1,7 @@
+path: '/home/soma2/MVP/roboflow_mask_dataset'
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 2
+names: ['mask', 'no-mask']

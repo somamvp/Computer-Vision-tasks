@@ -11,8 +11,8 @@ dataset_type = 0
 if_resize = True
 imgsize = [640, 480]
 ratio = [8,1,1]  # train/val/test
-src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
-target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
+src_dir = '../Aihub/Bbox_1'
+target_dir = '../Aihub/parse_1'
 
 ########################################################
 
@@ -51,7 +51,12 @@ def yaml_writer(nc, class_):
 
 def parser_0():
     folder_list = os.listdir(src_dir)
+    nc=0
+    classes={}
+    train_val_test=[0,0,0]
+    fn=0
     for folder in folder_list:
+        fn+=1
         file_list = os.listdir(src_dir+'/'+folder)
         for file in file_list:
             if file.endswith(".xml"):
@@ -62,12 +67,9 @@ def parser_0():
         #         dumy = file
         #         break
         images = [file for file in file_list if file.endswith(".jpg")]
+
         # xml parsing
-        nc=0
-        classes={}
-        train_val_test=[0,0,0]
-        # print(src_dir+'/'+folder+'/'+xml)
-        print("Processing %s..."%xml)
+        print("Processing %s...   (%d/%d)"%(folder,fn,len(folder_list)))
         with open(src_dir+'/'+folder+'/'+xml,'rt',encoding='UTF8') as f:
             lines = f.readlines()
             
@@ -77,8 +79,10 @@ def parser_0():
                     continue
                 # Classes
                 if "id" not in line:
-                    nc+=1
-                    classes[line[line.find('<name>')+6 : line.find("</name>")]] = nc
+                    class_name = line[line.find('<name>')+6 : line.find("</name>")]
+                    if(class_name not in list(classes.keys())):
+                        nc+=1
+                        classes[class_name] = nc
                 # Annotation
                 else:
                     image_name = line[line.find('name=')+6 : line.find('.jpg')]

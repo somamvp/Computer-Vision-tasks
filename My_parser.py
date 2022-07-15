@@ -1,20 +1,20 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 0
+dataset_type = 3
 '''
 0 = aihub 도보영상
 1 = aihub 표지판 신호등
-2 = 셀렉트스타
-3 = ETRI 신호등
+2 = ETRI 신호등
+3 = 셀렉트스타
 '''
 # blank_image_remain_ratio = 0.6  # image not contains any class
 if_resize = True
 imgsize = [640, 480]
 ratio = [8,1,1]  # train/val/test
-src_dir = '../Aihub/Bbox_2'
-target_dir = '../Aihub/parse_2'
-# src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
-# target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
+# src_dir = '../Aihub/Bbox_2'
+# target_dir = '../Aihub/parse_2'
+src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
+target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
 ########################################################
 
@@ -130,6 +130,19 @@ def parser_1():
     return
 
 def parser_2():
+    folder_list = os.listdir(src_dir)
+    nc=0
+    classes={}
+    train_val_test=[0,0,0]
+    fn=0
+    for folder in folder_list:
+        fn+=1
+        file_list = os.listdir(src_dir+'/'+folder)
+        for file in file_list:
+            if file.endswith(".json"):
+                json = file
+                
+
     return
 
 def parser_3():

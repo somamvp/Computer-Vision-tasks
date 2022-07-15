@@ -51,11 +51,13 @@ def yaml_writer(nc, class_):
                 f.write(']')
         f.close()
 
+nc=0
+classes={}
+train_val_test=[0,0,0]
+
 def parser_0():
     folder_list = os.listdir(src_dir)
-    nc=0
-    classes={}
-    train_val_test=[0,0,0]
+    
     fn=0
     for folder in folder_list:
         fn+=1
@@ -83,8 +85,8 @@ def parser_0():
                 if "id" not in line:
                     class_name = line[line.find('<name>')+6 : line.find("</name>")]
                     if(class_name not in list(classes.keys())):
-                        nc+=1
                         classes[class_name] = nc
+                        nc+=1
                 # Annotation
                 else:
                     image_name = line[line.find('name=')+6 : line.find('.jpg')]
@@ -115,15 +117,11 @@ def parser_0():
 
                     img = Image.open(src_dir+'/'+folder+'/'+image_name+'.jpg')
                     if(if_resize):
-                        image_resize = img.resize((640,480))
+                        image_resize = img.resize((imgsize[0],imgsize[1]))
                         image_resize.save(path[0]+'/images/'+image_name+'.jpg')
                     else:
                         img.save(path[0]+'/images/'+image_name+'.jpg')
-
-    # Write data.yaml
-    yaml_writer(nc, list(classes.keys()))
-    print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
-        train_val_test[1], train_val_test[2]))
+    
     return
 
 def parser_1():
@@ -171,6 +169,11 @@ def main():
         parser_3()
     else:
         print("Wrong dataset_type value")
+        return
+    # Write data.yaml
+    yaml_writer(nc, list(classes.keys()))
+    print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
+        train_val_test[1], train_val_test[2]))
 
 if __name__ == "__main__":
     main()

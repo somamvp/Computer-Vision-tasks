@@ -11,8 +11,8 @@ dataset_type = 0
 if_resize = True
 imgsize = [640, 480]
 ratio = [8,1,1]  # train/val/test
-src_dir = '../Aihub/Bbox_2'
-target_dir = '../Aihub/parse_2'
+src_dir = '../Aihub/Bbox_1'
+target_dir = '../Aihub/parse_1'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
 # target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
@@ -83,8 +83,8 @@ def parser_0():
                 if "id" not in line:
                     class_name = line[line.find('<name>')+6 : line.find("</name>")]
                     if(class_name not in list(classes.keys())):
-                        nc+=1
                         classes[class_name] = nc
+                        nc+=1
                 # Annotation
                 else:
                     image_name = line[line.find('name=')+6 : line.find('.jpg')]

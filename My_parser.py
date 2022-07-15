@@ -11,8 +11,10 @@ dataset_type = 0
 if_resize = True
 imgsize = [640, 480]
 ratio = [8,1,1]  # train/val/test
-src_dir = '../Aihub/Bbox_1'
-target_dir = '../Aihub/parse_1'
+src_dir = '../Aihub/Bbox_2'
+target_dir = '../Aihub/parse_2'
+# src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
+# target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
 ########################################################
 

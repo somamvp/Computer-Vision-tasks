@@ -11,17 +11,23 @@ dataset_type = 0
 if_resize = True
 imgsize = [640, 480]
 ratio = [8,1,1]  # train/val/test
-src_dir = '../Aihub/Bbox_1'
-target_dir = '../Aihub/parse_1'
+# src_dir = '../Aihub/Bbox_2'
+# target_dir = '../Aihub/parse_2'
+src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
+target_dir = 'C:/Users/dklee/Downloads/selectStar/parsed_1'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
 # target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
 ########################################################
 
+classes={}
+train_val_test=[0,0,0]
+
 from PIL import Image
 import os
 import shutil
 import random
+import json
 
 def path_generator():
     dest=0
@@ -38,7 +44,8 @@ def path_generator():
         dest=2
     return [path, dest]  # dir_path & ENUM
 
-def yaml_writer(nc, class_):
+def yaml_writer():
+    class_ = list(classes.keys())
     with open(target_dir+"/data.yaml", 'w') as f:
         f.write("path: "+target_dir+"\ntrain: ./train/images\nval: ./val/images\n")
         f.write("test: ./test/images\n\nnc: %d\nnames: ["%nc)
@@ -53,9 +60,8 @@ def yaml_writer(nc, class_):
 
 def parser_0():
     folder_list = os.listdir(src_dir)
+    global nc
     nc=0
-    classes={}
-    train_val_test=[0,0,0]
     fn=0
     for folder in folder_list:
         fn+=1
@@ -71,7 +77,7 @@ def parser_0():
         images = [file for file in file_list if file.endswith(".jpg")]
 
         # xml parsing
-        print("Processing %s...   (%d/%d)"%(folder,fn,len(folder_list)))
+        print("Processing %s ...  (%d/%d)"%(folder,fn,len(folder_list)))
         with open(src_dir+'/'+folder+'/'+xml,'rt',encoding='UTF8') as f:
             lines = f.readlines()
             
@@ -115,37 +121,57 @@ def parser_0():
 
                     img = Image.open(src_dir+'/'+folder+'/'+image_name+'.jpg')
                     if(if_resize):
-                        image_resize = img.resize((640,480))
+                        image_resize = img.resize((imgsize[0],imgsize[1]))
                         image_resize.save(path[0]+'/images/'+image_name+'.jpg')
                     else:
                         img.save(path[0]+'/images/'+image_name+'.jpg')
-
-    # Write data.yaml
-    yaml_writer(nc, list(classes.keys()))
-    print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
-        train_val_test[1], train_val_test[2]))
+    
     return
 
 def parser_1():
     return
 
 def parser_2():
-    folder_list = os.listdir(src_dir)
-    nc=0
-    classes={}
-    train_val_test=[0,0,0]
-    fn=0
-    for folder in folder_list:
-        fn+=1
-        file_list = os.listdir(src_dir+'/'+folder)
-        for file in file_list:
-            if file.endswith(".json"):
-                json = file
-                
-
     return
 
 def parser_3():
+    file_list = os.listdir(src_dir)
+    global nc
+    nc=0
+    for file in file_list:
+        if file.endswith(".json"):
+            with open(src_dir+'/'+file, 'r') as f:
+                j = json.load(f)
+                # print(j["shapes"][0]["label"])
+                class_name = j["shapes"][0]["label"]
+                if(class_name not in list(classes.keys())):
+                    classes[class_name] = nc
+                    nc+=1
+                image_file = j["imagePath"]
+                if(not os.path.exists(src_dir+'/'+image_file)):
+                    print(image_file+'  [Missing]')
+                    break
+                point = j["shapes"][0]["points"]
+                xtl = float(point[0][0])
+                ytl = float(point[0][1])
+                xbr = float(point[1][0])
+                ybr = float(point[1][1])
+                width = float(j["imageWidth"])
+                height = float(j["imageHeight"])
+
+                path = path_generator()
+                train_val_test[path[1]] += 1
+                with open(path[0]+'/labels/'+image_file[:image_file.find(".jpg")]+'.txt', 'w') as t:
+                    parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str((xbr-xtl)/width)+' '+str((ybr-ytl)/height)+'\n'
+                    t.write(parsing)
+                    t.close
+                img = Image.open(src_dir+'/'+image_file)
+                if(if_resize):
+                    image_resize = img.resize((imgsize[0],imgsize[1]))
+                    image_resize.save(path[0]+'/images/'+image_file)
+                else:
+                    img.save(path[0]+'/images/'+image_file)
+    
     return
 
 
@@ -175,6 +201,11 @@ def main():
         parser_3()
     else:
         print("Wrong dataset_type value")
+        return
+    # Write data.yaml
+    yaml_writer()
+    print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
+        train_val_test[1], train_val_test[2]))
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 0
+dataset_type = 3
 '''
 0 = aihub 도보영상
 1 = aihub 표지판 신호등
@@ -9,19 +9,21 @@ dataset_type = 0
 '''
 # blank_image_remain_ratio = 0.6  # image not contains any class
 if_resize = True
-imgsize = [640, 480]
+imgsize = [640, 360]
 ratio = [8,1,1]  # train/val/test
-# src_dir = '../Aihub/Bbox_2'
-# target_dir = '../Aihub/parse_2'
-src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
-target_dir = 'C:/Users/dklee/Downloads/selectStar/parsed_1'
+src_dir = '../dataset/Wesee'
+target_dir = '../dataset/Wesee_parsed'
+# src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
+# target_dir = 'C:/Users/dklee/Downloads/selectStar/parsed_1'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
 # target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
 ########################################################
 
 classes={}
+cases={}
 train_val_test=[0,0,0]
+img_box=[0,0]
 
 from PIL import Image
 import os
@@ -56,6 +58,9 @@ def yaml_writer():
                 f.write(', ')
             else:
                 f.write(']')
+        f.write("\n# Dataset statistics: \n# Total imgs: %d\n# Total Bbox: %d\n"%(img_box[0],img_box[1]))
+        for i in range(len_):
+            f.write("#\t%s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
 
 def parser_0():
@@ -97,6 +102,7 @@ def parser_0():
                     if(not os.path.exists(src_dir+'/'+folder+'/'+image_name+'.jpg')):
                         print(image_name+'.jpg  [Missing]')
                         continue
+                    img_box[0]+=1
                     path = path_generator()
                     train_val_test[path[1]] += 1
                     width = float(line[line.find('width')+7 : line.find('height')-2])
@@ -107,6 +113,7 @@ def parser_0():
                             if("</image>" in lines[i]):
                                 break
                             src = lines[i]
+                            img_box[1]+=1
                             # print(src)
                             obj = src[src.find('label')+7 : src.find('occ')-2]
                             xtl = float(src[src.find('xtl')+5 : src.find('ytl')-2])
@@ -135,42 +142,59 @@ def parser_2():
     return
 
 def parser_3():
-    file_list = os.listdir(src_dir)
+    folder_list = os.listdir(src_dir)
+    fn=0
     global nc
     nc=0
-    for file in file_list:
-        if file.endswith(".json"):
-            with open(src_dir+'/'+file, 'r') as f:
-                j = json.load(f)
-                # print(j["shapes"][0]["label"])
-                class_name = j["shapes"][0]["label"]
-                if(class_name not in list(classes.keys())):
-                    classes[class_name] = nc
-                    nc+=1
-                image_file = j["imagePath"]
-                if(not os.path.exists(src_dir+'/'+image_file)):
-                    print(image_file+'  [Missing]')
-                    break
-                point = j["shapes"][0]["points"]
-                xtl = float(point[0][0])
-                ytl = float(point[0][1])
-                xbr = float(point[1][0])
-                ybr = float(point[1][1])
-                width = float(j["imageWidth"])
-                height = float(j["imageHeight"])
+    for folder in folder_list:
+        fn+=1
+        print("Processing %s ...  (%d/%d)"%(folder,fn,len(folder_list)))
+        file_list = os.listdir(src_dir+'/'+folder)
+        
+        for file in file_list:
+            if file.endswith(".json"):
+                folder_dir = src_dir+'/'+folder+'/'
+                with open(folder_dir+file, 'r') as f:
+                    j = json.load(f)
+                    # print(j["shapes"][0]["label"])
+                    
+                    image_file = j["imagePath"]
+                    if(not os.path.exists(folder_dir+image_file)):
+                        print(image_file+'  [Missing]: json=%s%s'%(folder_dir,file))
+                        break
+                    
+                    img_box[0]+=1
+                    img_box[1]+=len(j["shapes"])
+                    path = path_generator()
+                    train_val_test[path[1]] += 1
+                    with open(path[0]+'/labels/'+image_file[:image_file.find(".jpg")]+'.txt', 'w') as t:
+                        for i in range(len(j["shapes"])):
+                            class_name = j["shapes"][i]["label"]
 
-                path = path_generator()
-                train_val_test[path[1]] += 1
-                with open(path[0]+'/labels/'+image_file[:image_file.find(".jpg")]+'.txt', 'w') as t:
-                    parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str((xbr-xtl)/width)+' '+str((ybr-ytl)/height)+'\n'
-                    t.write(parsing)
+                            if(class_name=='1'):
+                                continue
+                            if(class_name not in list(classes.keys())):
+                                classes[class_name] = nc
+                                cases[class_name]=0
+                                nc+=1
+                            cases[class_name] += 1
+
+                            point = j["shapes"][i]["points"]
+                            xtl = float(point[0][0])
+                            ytl = float(point[0][1])
+                            xbr = float(point[1][0])
+                            ybr = float(point[1][1])
+                            width = float(j["imageWidth"])
+                            height = float(j["imageHeight"])
+                            parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str((xbr-xtl)/width)+' '+str((ybr-ytl)/height)+'\n'
+                            t.write(parsing)
                     t.close
-                img = Image.open(src_dir+'/'+image_file)
-                if(if_resize):
-                    image_resize = img.resize((imgsize[0],imgsize[1]))
-                    image_resize.save(path[0]+'/images/'+image_file)
-                else:
-                    img.save(path[0]+'/images/'+image_file)
+                    img = Image.open(folder_dir+image_file)
+                    if(if_resize):
+                        image_resize = img.resize((imgsize[0],imgsize[1]))
+                        image_resize.save(path[0]+'/images/'+image_file)
+                    else:
+                        img.save(path[0]+'/images/'+image_file)
     
     return
 

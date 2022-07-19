@@ -171,7 +171,7 @@ def parser_3():
                     img_box[1]+=len(j["shapes"])
                     path = path_generator()
                     train_val_test[path[1]] += 1
-                    with open(path[0]+'/labels/'+image_file[:image_file.find(".jpg")]+'.txt', 'w') as t:
+                    with open(path[0]+'/labels/'+image_file[:image_file.find(".")]+'.txt', 'w') as t:
                         for i in range(len(j["shapes"])):
                             class_name = j["shapes"][i]["label"]
 

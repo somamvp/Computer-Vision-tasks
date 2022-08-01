@@ -106,6 +106,9 @@ class Model(nn.Module):
         if nc and nc != self.yaml['nc']:
             LOGGER.info(f"Overriding model.yaml nc={self.yaml['nc']} with nc={nc}")
             self.yaml['nc'] = nc  # override yaml value
+        # if ch != self.yaml['ch']:
+        #     LOGGER.info(f"Overriding model.yaml nc={self.yaml['ch']} with nc={ch}")
+        #     self.yaml['ch'] = ch  # override yaml value
         if anchors:
             LOGGER.info(f'Overriding model.yaml anchors with anchors={anchors}')
             self.yaml['anchors'] = round(anchors)  # override yaml value

@@ -14,7 +14,7 @@ if_compress = True
 compress_ratio = 0.5  # 0~1
 ratio = [8,1,1]  # train/val/test
 src_dir = '../dataset/Wesee'
-target_dir = '../dataset/Wesee_parsed'
+target_dir = '../dataset/Wesee_parsed_test'
 # src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
 # target_dir = 'C:/Users/dklee/Downloads/selectStar/parsed_1'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
@@ -64,6 +64,15 @@ def yaml_writer():
         for i in range(len_):
             f.write("#\t%s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
+
+def image_maker(img_dir, image_name, store_dir):
+    img = Image.open(img_dir+'/'+image_name)
+    if(if_resize):
+        image_resize = img.resize((imgsize[0],imgsize[1]))
+        image_resize.save(store_dir+'/'+image_name)
+    else:
+        img.save(store_dir+'/'+image_name)
+    
 
 def parser_0():
     folder_list = os.listdir(src_dir)
@@ -127,14 +136,7 @@ def parser_0():
                             i=i+1
                         t.close()
 
-
-                    img = Image.open(src_dir+'/'+folder+'/'+image_name+'.jpg')
-                    if(if_resize):
-                        image_resize = img.resize((imgsize[0],imgsize[1]))
-                        image_resize.save(path[0]+'/images/'+image_name+'.jpg')
-                    else:
-                        img.save(path[0]+'/images/'+image_name+'.jpg')
-    
+                    # image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images')
     return
 
 def parser_1():
@@ -169,7 +171,7 @@ def parser_3():
                     img_box[1]+=len(j["shapes"])
                     path = path_generator()
                     train_val_test[path[1]] += 1
-                    with open(path[0]+'/labels/'+image_file[:image_file.find(".jpg")]+'.txt', 'w') as t:
+                    with open(path[0]+'/labels/'+image_file[:image_file.find(".")]+'.txt', 'w') as t:
                         for i in range(len(j["shapes"])):
                             class_name = j["shapes"][i]["label"]
 
@@ -184,30 +186,33 @@ def parser_3():
                             width = float(j["imageWidth"])
                             height = float(j["imageHeight"])
                             point = j["shapes"][i]["points"]
-                            xtl = float(point[0][0])
-                            if(xtl<0):
-                                xtl=0.00001
-                            ytl = float(point[0][1])
-                            if(ytl<0):
-                                ytl=0.00001
-                            xbr = float(point[1][0])
-                            if(xbr>width):
-                                xbr=width-0.00001
-                            ybr = float(point[1][1])
-                            if(ybr>height):
-                                ybr=height-0.00001
-                            
-                            parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str((xbr-xtl)/width)+' '+str((ybr-ytl)/height)+'\n'
-                            t.write(parsing)
-                    t.close
+                            if float(point[0][0])>float(point[1][0]):
+                                xtl = float(point[1][0])
+                                xbr = float(point[0][0])
+                            else:
+                                xtl = float(point[0][0])
+                                xbr = float(point[1][0])
+                            if(xtl<=0):
+                                xtl=1
+                            if(xbr>=width):
+                                xbr=width-1
 
-                    img = Image.open(folder_dir+image_file)
-                    if(if_resize):
-                        image_resize = img.resize((imgsize[0],imgsize[1]))
-                        image_resize.save(path[0]+'/images/'+image_file)
-                    else:
-                        img.save(path[0]+'/images/'+image_file)
-    
+                            if float(point[0][1])>float(point[1][1]):
+                                ytl = float(point[1][1])
+                                ybr = float(point[0][1])
+                            else:
+                                ytl = float(point[0][1])
+                                ybr = float(point[1][1])
+                            if(ytl<=0):
+                                ytl=1
+                            if(ybr>=height):
+                                ybr=height-1
+                            
+                            parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
+                            t.write(parsing)
+                        t.close 
+
+                    # image_maker(folder_dir, image_file, path[0]+'/images')
     return
 
 

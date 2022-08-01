@@ -7,14 +7,14 @@ dataset_type = 3
 2 = ETRI 신호등
 3 = 셀렉트스타
 '''
-# blank_image_remain_ratio = 0.6  # image not contains any class
-if_resize = True
 imgsize = [640, 360]
-if_compress = True
-compress_ratio = 0.5  # 0~1
-data_ratio = [8,1,1]  # train/val/test, 합이 10이 될 필요없음
+if_compress = False
+jpg_quality = 50  # value: 1~95  (default=75)
+data_ratio = [8,1,1]  # train/val/test
+image_process = True
+
 src_dir = '../dataset/Wesee'
-target_dir = '../dataset/Wesee_parsed_test'
+target_dir = '../dataset/Wesee_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
 # target_dir = 'C:/Users/dklee/Downloads/selectStar/parsed_1'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
@@ -60,18 +60,19 @@ def yaml_writer():
                 f.write(', ')
             else:
                 f.write(']')
-        f.write("\n# Dataset statistics: \n# Total imgs: %d\n# Total Bbox: %d\n"%(img_box[0],img_box[1]))
+        f.write("\n# Dataset statistics: \n#\tTotal imgs: %d\n#\tTotal Bbox: %d\n"%(img_box[0],img_box[1]))
         for i in range(len_):
-            f.write("#\t%s: %d\n"%(class_[i],cases[class_[i]]))
+            f.write("#\t\t%s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
 
 def image_maker(img_dir, image_name, store_dir):
     img = Image.open(img_dir+'/'+image_name)
-    if(if_resize):
-        image_resize = img.resize((imgsize[0],imgsize[1]))
-        image_resize.save(store_dir+'/'+image_name)
+    img_resize = img.resize((imgsize[0],imgsize[1]))
+
+    if(if_compress):
+        img_resize.save(store_dir+'/'+image_name, quality=jpg_quality)
     else:
-        img.save(store_dir+'/'+image_name)
+        img_resize.save(store_dir+'/'+image_name)
     
 
 def parser_0():
@@ -131,8 +132,8 @@ def parser_0():
                             t.write(parsing)
                             i=i+1
                         t.close()
-
-                    # image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images')
+                    if(image_process):
+                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images')
     return
 
 def parser_1():
@@ -208,8 +209,8 @@ def parser_3():
                             parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
                             t.write(parsing)
                         t.close 
-
-                    # image_maker(folder_dir, image_file, path[0]+'/images')
+                    if(image_process):
+                        image_maker(folder_dir, image_file, path[0]+'/images')
     return
 
 

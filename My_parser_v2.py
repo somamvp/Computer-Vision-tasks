@@ -12,7 +12,7 @@ if_resize = True
 imgsize = [640, 360]
 if_compress = True
 compress_ratio = 0.5  # 0~1
-ratio = [8,1,1]  # train/val/test
+data_ratio = [8,1,1]  # train/val/test, 합이 10이 될 필요없음
 src_dir = '../dataset/Wesee'
 target_dir = '../dataset/Wesee_parsed_test'
 # src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
@@ -20,7 +20,7 @@ target_dir = '../dataset/Wesee_parsed_test'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
 # target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
-########################################################
+#######################################################
 
 classes={}
 cases={}
@@ -35,12 +35,12 @@ import json
 
 def path_generator():
     dest=0
-    total_score = sum(ratio)
+    total_score = sum(data_ratio)
     tmp = random.random()
-    if(tmp < ratio[0]/total_score):
+    if(tmp < data_ratio[0]/total_score):
         path = target_dir+'/train'
         dest=0
-    elif(tmp < (ratio[0]+ratio[1])/total_score):
+    elif(tmp < (data_ratio[0]+data_ratio[1])/total_score):
         path = target_dir+'/val'
         dest=1
     else:
@@ -86,10 +86,6 @@ def parser_0():
             if file.endswith(".xml"):
                 xml = file
                 break
-        # for file in file_list:
-        #     if file.endswith(".txt"):
-        #         dumy = file
-        #         break
         images = [file for file in file_list if file.endswith(".jpg")]
 
         # xml parsing
@@ -159,9 +155,7 @@ def parser_3():
             if file.endswith(".json"):
                 folder_dir = src_dir+'/'+folder+'/'
                 with open(folder_dir+file, 'r') as f:
-                    j = json.load(f)
-                    # print(j["shapes"][0]["label"])
-                    
+                    j = json.load(f)                    
                     image_file = j["imagePath"]
                     if(not os.path.exists(folder_dir+image_file)):
                         print(image_file+'  [Missing]: json=%s%s'%(folder_dir,file))
@@ -171,10 +165,13 @@ def parser_3():
                     img_box[1]+=len(j["shapes"])
                     path = path_generator()
                     train_val_test[path[1]] += 1
+
+                    #사진이 jpg도 있고 png도 있음
                     with open(path[0]+'/labels/'+image_file[:image_file.find(".")]+'.txt', 'w') as t:
                         for i in range(len(j["shapes"])):
                             class_name = j["shapes"][i]["label"]
 
+                            # 일부 클래스명이 숫자 1로 되어있는 오류가 있음    
                             if(class_name=='1'):
                                 continue
                             if(class_name not in list(classes.keys())):

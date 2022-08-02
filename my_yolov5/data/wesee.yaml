@@ -1,0 +1,13 @@
+path: ../dataset/Wesee_parsed
+train: ./train/images
+val: ./val
+test: ./test/images
+
+nc: 3
+names: ['Zebra_Cross', 'R_Signal', 'G_Signal']
+# Dataset statistics: 
+# Total imgs: 36807
+# Total Bbox: 51635
+#	  Zebra_Cross: 37112
+#	  R_Signal: 10714
+#	  G_Signal: 3809

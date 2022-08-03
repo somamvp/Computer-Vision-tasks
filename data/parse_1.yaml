@@ -1,7 +1,0 @@
-path: ../Aihub/parse_1
-train: ./train/images
-val: ./val/images
-test: ./test/images
-
-nc: 27
-names: ['wheelchair', 'truck', 'tree_trunk', 'traffic_sign', 'traffic_light', 'table', 'stroller', 'stop', 'scooter', 'potted_plant', 'pole', 'person', 'parking_meter', 'movable_signage', 'motorcycle', 'kiosk', 'fire_hydrant', 'dog', 'chair', 'cat', 'carrier', 'car', 'bus', 'bollard', 'bicycle', 'bench', 'barricade']

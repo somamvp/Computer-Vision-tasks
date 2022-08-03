@@ -12,7 +12,7 @@ if_resize = True
 imgsize = [640, 360]
 if_compress = True
 compress_ratio = 0.5  # 0~1
-ratio = [8,1,1]  # train/val/test
+data_ratio = [8,1,1]  # train/val/test
 src_dir = '../dataset/Wesee'
 target_dir = '../dataset/Wesee_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
@@ -35,12 +35,12 @@ import json
 
 def path_generator():
     dest=0
-    total_score = sum(ratio)
+    total_score = sum(data_ratio)
     tmp = random.random()
-    if(tmp < ratio[0]/total_score):
+    if(tmp < data_ratio[0]/total_score):
         path = target_dir+'/train'
         dest=0
-    elif(tmp < (ratio[0]+ratio[1])/total_score):
+    elif(tmp < (data_ratio[0]+data_ratio[1])/total_score):
         path = target_dir+'/val'
         dest=1
     else:

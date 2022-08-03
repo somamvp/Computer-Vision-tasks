@@ -1,6 +1,6 @@
-path: ../dataset/Wesee_parsed
+path: ../../dataset/Wesee_parsed
 train: ./train/images
-val: ./val
+val: ./val/images
 test: ./test/images
 
 nc: 3

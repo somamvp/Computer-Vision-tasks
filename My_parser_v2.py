@@ -2,21 +2,21 @@
 # ------------------ Parameters -------------------- #
 dataset_type = 3
 '''
-0 = aihub 도보영상
-1 = aihub 표지판 신호등
+0 = Aihub 도보 -> 문제있음, 폴더 한겹 추가해야됨
+1 = Aihub 휠체어
 2 = ETRI 신호등
-3 = 셀렉트스타
+3 = Wesee 셀렉트스타
 '''
 imgsize = [640, 360]
 if_compress = False
-jpg_quality = 50  # value: 1~95  (default=75)
+jpg_quality = 75  # value: 1~95  (default=75)
 data_ratio = [8,1,1]  # train/val/test
 image_process = True
 
-src_dir = '../dataset/Wesee'
-target_dir = '../dataset/Wesee_parsed'
-# src_dir = 'C:/Users/dklee/Downloads/selectStar/selectStar_sample_1'
-# target_dir = 'C:/Users/dklee/Downloads/selectStar/parsed_1'
+# src_dir = '../dataset/Wesee'
+# target_dir = '../dataset/Wesee_parsed'
+src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
+target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
 # target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 

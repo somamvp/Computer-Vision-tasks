@@ -1,10 +1,10 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 3
+dataset_type = 1
 '''
 0 = Aihub 도보 -> 문제있음, 폴더 한겹 추가해야됨
 1 = Aihub 휠체어
-2 = ETRI 신호등
+2 = COCO
 3 = Wesee 셀렉트스타
 '''
 imgsize = [640, 360]
@@ -13,10 +13,10 @@ jpg_quality = 75  # value: 1~95  (default=75)
 data_ratio = [8,1,1]  # train/val/test
 image_process = True
 
-# src_dir = '../dataset/Wesee'
-# target_dir = '../dataset/Wesee_parsed'
-src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
-target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
+src_dir = '../dataset/Wheel_sample'
+target_dir = '../dataset/Wheel_sample_parsed'
+# src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
+# target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
 # target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
@@ -137,6 +137,12 @@ def parser_0():
     return
 
 def parser_1():
+    for type in ['/train','/val']:
+        image_list = os.listdir(src_dir+type+'/images')
+        label_list = os.listdir(src_dir+type+'/labels')
+        
+        
+
     return
 
 def parser_2():

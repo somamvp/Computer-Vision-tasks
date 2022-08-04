@@ -2,19 +2,20 @@
 # ------------------ Parameters -------------------- #
 dataset_type = 1
 '''
-0 = Aihub 도보 -> 문제있음, 폴더 한겹 추가해야됨
-1 = Aihub 휠체어
-2 = COCO
+0 = Dobo 도보 aihub -> 현재 폴더 열람방식 문제있음, 폴더 한겹 추가해야됨
+1 = Chair 휠체어 aihub
+2 = COCO, 미리 class 줄여놔야됨
 3 = Wesee 셀렉트스타
 '''
+
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 75  # value: 1~95  (default=75)
-data_ratio = [8,1,1]  # train/val/test
-image_process = True
 
-src_dir = '../dataset/Wheel_sample'
-target_dir = '../dataset/Wheel_sample_parsed'
+data_ratio = [8,1,1]  # train/val/test
+src_dir = '../dataset/Chair_sample'
+target_dir = '../dataset/Chair_sample_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
@@ -22,10 +23,10 @@ target_dir = '../dataset/Wheel_sample_parsed'
 
 #######################################################
 
-classes={}
-cases={}
-train_val_test=[0,0,0]
-img_box=[0,0]
+classes={}  # Key : class name, Value : int allocated to that class
+cases={}  # Key : class name, Value : number of its bbox
+train_val_test=[0,0,0]  # Number of each type of data [train, val, test]
+img_box=[0,0,0]   # Number of total [images, bboxes, tiny_boxes]
 
 from PIL import Image
 import os
@@ -51,8 +52,8 @@ def path_generator():
 def yaml_writer():
     class_ = list(classes.keys())
     with open(target_dir+"/data.yaml", 'w') as f:
-        f.write("path: "+target_dir+"\ntrain: ./train/images\nval: ./val/images\n")
-        f.write("test: ./test/images\n\nnc: %d\nnames: ["%nc)
+        f.write("path: "+target_dir+"\ntrain: train/images\nval: val/images\n")
+        f.write("test: test/images\n\nnc: %d\nnames: ["%nc)
         len_ = len(class_)
         for i in range(len_):
             f.write("'%s'"%class_[i])
@@ -61,24 +62,40 @@ def yaml_writer():
             else:
                 f.write(']')
         f.write("\n# Dataset statistics: \n#\tTotal imgs: %d\n#\tTotal Bbox: %d\n"%(img_box[0],img_box[1]))
+        f.write("#\tToo small boxes ignored: %d\n"%img_box[2])
         for i in range(len_):
             f.write("#\t\t%s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
 
-def image_maker(img_dir, image_name, store_dir):
+def image_maker(img_dir, image_name, store_dir, store_name):
     img = Image.open(img_dir+'/'+image_name)
     img_resize = img.resize((imgsize[0],imgsize[1]))
 
     if(if_compress):
-        img_resize.save(store_dir+'/'+image_name, quality=jpg_quality)
+        img_resize.save(store_dir+'/'+store_name, quality=jpg_quality)
     else:
-        img_resize.save(store_dir+'/'+image_name)
+        img_resize.save(store_dir+'/'+store_name)
+
+# def image_maker(img_dir, image_name, store_dir):
+#     image_maker(img_dir, image_name, store_dir, image_name)
     
+def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
+    if xtl<=0:
+        xtl=1
+    if xbr>=width:
+        xbr=width-1
+    if ytl<=0:
+        ytl=1
+    if ybr>=height:
+        ybr = height-1
+    if ((xbr-xtl)*(ybr-ytl)) < 1000:
+        img_box[2] += 1
+        return False
+    else:
+        return str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
 
 def parser_0():
     folder_list = os.listdir(src_dir)
-    global nc
-    nc=0
     fn=0
     for folder in folder_list:
         fn+=1
@@ -128,20 +145,90 @@ def parser_0():
                             ytl = float(src[src.find('ytl')+5 : src.find('xbr')-2])
                             xbr = float(src[src.find('xbr')+5 : src.find('ybr')-2])
                             ybr = float(src[src.find('ybr')+5 : src.find('z_order')-2])
-                            parsing = str(classes[obj])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str((xbr-xtl)/width)+' '+str((ybr-ytl)/height)+'\n'
-                            t.write(parsing)
+                            
+                            parse = parsing(class_name, xtl, ytl, xbr, ybr, width, height)
+                            if not parse:
+                                cases[class_name] -= 1
+                                img_box[1] -= 1
+                                continue
+                            else:
+                                t.write(parse)
                             i=i+1
                         t.close()
                     if(image_process):
-                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images')
+                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
 def parser_1():
+    global nc
+    nc=0
     for type in ['/train','/val']:
-        image_list = os.listdir(src_dir+type+'/images')
-        label_list = os.listdir(src_dir+type+'/labels')
-        
-        
+        label_folders = os.listdir(src_dir+type+'/labels')
+        if len(label_folders)==0:
+            continue
+        for label_folder in label_folders:
+            if(os.path.exists(src_dir+type+'/labels/'+label_folder+'/Out/Day')):
+                period = "Day"
+            elif(os.path.exists(src_dir+type+'/labels/'+label_folder+'/Out/Night')):
+                period = "Night"
+            else:
+                print("Inappropriate folder structure : %s"%(type+'/labels/'+label_folder))
+                return
+            location = os.listdir(src_dir+type+'/labels/'+label_folder+'/Out/'+period)[0]
+            label_path = src_dir+type+'/labels/'+label_folder+'/Out/'+period+'/'+location+'/Left'
+            image_path = src_dir+type+'/images/'+'TS'+label_folder[2:]+'/Out/'+period+'/'+location+'/Left'
+            label_list = os.listdir(label_path)
+            # print(len(label_list))
+
+            if type=='/train':
+                train_val_test[0] += len(label_list)
+            else:
+                train_val_test[1] += len(label_list)
+            img_box[0] += len(label_list)
+
+            for label in label_list:
+                with open(label_path+'/'+label, 'r') as l:
+                    j = json.load(l)
+                    file_name = location+'_'+label[label.find("Left_")+5:label.find(".json")]
+                    with open(target_dir+type+'/labels/'+file_name+'.txt','w') as t:
+                        img_box[1] += len(j["shapes"])
+                        for feature in j["shapes"]:
+                            class_name = feature["label"]
+                            if class_name not in classes.keys():
+                                classes[class_name] = nc
+                                cases[class_name] = 1
+                                nc+=1
+                            else:
+                                cases[class_name] += 1
+                            points = feature["points"]
+
+                            # Image size is 1920*1080
+                            height = 1080
+                            width = 1920
+                            x=[]
+                            y=[]
+                            for point in points:
+                                x.append(point[0])
+                                y.append(point[1])
+                            xtl = min(x)
+                            xbr = max(x)
+                            ytl = min(y)
+                            ybr = max(y)
+
+                            parse = parsing(class_name, xtl, ytl, xbr, ybr, width, height)
+                            if not parse:
+                                cases[class_name] -= 1
+                                img_box[1] -= 1
+                                continue
+                            else:
+                                t.write(parse)
+                
+                if image_process:
+                    image_name = label[:label.find('.json')]+'.jpg'
+                    if os.path.exists(image_path+'/'+image_name):
+                        image_maker(image_path, image_name, target_dir+type+'/images', file_name+'.jpg')
+                    else:
+                        print("Cannot find image %s"%(image_path+'/'+image_name))
 
     return
 
@@ -151,8 +238,7 @@ def parser_2():
 def parser_3():
     folder_list = os.listdir(src_dir)
     fn=0
-    global nc
-    nc=0
+    
     for folder in folder_list:
         fn+=1
         print("Processing %s ...  (%d/%d)"%(folder,fn,len(folder_list)))
@@ -196,10 +282,6 @@ def parser_3():
                             else:
                                 xtl = float(point[0][0])
                                 xbr = float(point[1][0])
-                            if(xtl<=0):
-                                xtl=1
-                            if(xbr>=width):
-                                xbr=width-1
 
                             if float(point[0][1])>float(point[1][1]):
                                 ytl = float(point[1][1])
@@ -207,16 +289,17 @@ def parser_3():
                             else:
                                 ytl = float(point[0][1])
                                 ybr = float(point[1][1])
-                            if(ytl<=0):
-                                ytl=1
-                            if(ybr>=height):
-                                ybr=height-1
                             
-                            parsing = str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
-                            t.write(parsing)
+                            parse = parsing(class_name, xtl, ytl, xbr, ybr, width, height)
+                            if not parse:
+                                cases[class_name] -= 1
+                                img_box[1] -= 1
+                                continue
+                            else:
+                                t.write(parse)
                         t.close 
                     if(image_process):
-                        image_maker(folder_dir, image_file, path[0]+'/images')
+                        image_maker(folder_dir, image_file, path[0]+'/images', image_file)
     return
 
 
@@ -235,6 +318,9 @@ def main():
         'test','test/images','test/labels']
     for tmp in dir_list:
         os.mkdir(target_dir+'/'+tmp)
+    
+    global nc
+    nc=0
 
     if(dataset_type==0):
         parser_0()
@@ -249,6 +335,8 @@ def main():
         return
     # Write data.yaml
     yaml_writer()
+    if train_val_test[2]==0:
+        shutil.rmtree(target_dir+'/test')
     print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
         train_val_test[1], train_val_test[2]))
 

@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 0
+dataset_type = 1
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -15,10 +15,12 @@ jpg_quality = 50  # value: 1~95  (default=75)
 tiny_cutoff = 2000
 
 data_ratio = [8,1,1]  # train/val/test
-src_dir = '../dataset/Dobo_sample'
-target_dir = '../dataset/Dobo_sample_parsed'
+src_dir = '../dataset/Chair_sample'
+target_dir = '../dataset/Chair_sample_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
+
+force_classing=True
 
 #######################################################
 
@@ -26,6 +28,8 @@ classes={}  # Key : class name, Value : int allocated to that class
 cases={}  # Key : class name, Value : number of its bbox
 train_val_test=[0,0,0]  # Number of each type of data [train, val, test]
 img_box=[0,0,0]   # Number of total [images, bboxes, tiny_boxes]
+global nc
+nc=0
 
 from PIL import Image
 import os
@@ -96,7 +100,6 @@ def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
 
 def parser_0():
     global nc
-    nc=0
     fn=0
     upper_list = os.listdir(src_dir)
     for upper_folder in upper_list:
@@ -171,7 +174,6 @@ def parser_0():
 # 4장 중 한장씩만 입력됨
 def parser_1():
     global nc
-    nc=0
     for type in ['/train','/val']:
     # for type in ['/val']:
         fn=0
@@ -213,7 +215,7 @@ def parser_1():
                         img_box[1] += len(j["shapes"])
                         for feature in j["shapes"]:
                             class_name = feature["label"]
-                            if class_name not in classes.keys():
+                            if class_name not in list(classes.keys()):
                                 classes[class_name] = nc
                                 cases[class_name] = 1
                                 nc+=1
@@ -323,33 +325,58 @@ def parser_2():
 def parser_3():
     return
 
+def class_init(dataset):
+    global nc
+    if(not force_classing):
+        return
+        
+    with open('class.json','r',encoding="UTF-8") as class_json:
+        forced_class = json.load(class_json)
+
+    for c in forced_class[dataset]["Original"]:
+        classes[c] = nc
+        cases[c]=0
+        nc+=1
+
 
 def main():
     if src_dir==target_dir:
         print("ERROR : 소스 폴더와 타켓 폴더가 같습니다")
         return
-    if os.path.exists(target_dir):
-        if(len(os.listdir(target_dir))>0):
-            ans = input("타겟 폴더 내부에 파일이 있습니다. 전부 지우고 계속 하시겠습니까? [y,n] : ")
-            if(ans!='y'):
-                return
-            shutil.rmtree(target_dir)
-            os.mkdir(target_dir)
-    else:
-        os.mkdir(target_dir)
+    for dir in ['/train','/val','/test','/train/labels','/val/labels','/test/labels'
+                ,'/train/images','/val/images','/test/images']:
+        if not os.path.exists(target_dir+dir):
+            os.mkdir(target_dir+dir)
+    delete_list = ['/train/labels','/val/labels','/test/labels']
 
-    dir_list = ['train','train/images','train/labels','val','val/images','val/labels',
-        'test','test/images','test/labels']
-    for tmp in dir_list:
-        os.mkdir(target_dir+'/'+tmp)
+    if image_process:
+        deletion=['/train/images','/val/images','/test/images']
+        for delete in deletion:
+            if os.path.exists(target_dir+delete):
+                if len(os.listdir(target_dir+delete))>0:
+                    ans = input("타겟 폴더 내부 이미지가 전부 지워집니다. 계속 하시겠습니까? [y,n] : ")
+                    if(ans!='y'):
+                        return
+                    break
+        for delete in deletion:
+            delete_list.append(delete)
 
+    for dir in delete_list:
+        if os.path.exists(target_dir+dir):
+            shutil.rmtree(target_dir+dir)
+        os.mkdir(target_dir+dir)
+    
     if(dataset_type==0):
+        class_init('Dobo')
         parser_0()
     elif(dataset_type==1):
+        class_init('Chair')
         parser_1()
     elif(dataset_type==2):
+        class_init('Wesee')
         parser_2()
     elif(dataset_type==3):
+        class_init('Coco')
         parser_3()
     else:
         print("Wrong dataset_type value")

@@ -1,7 +1,6 @@
 ######################################################################
 # Only works for YOLO Format. Convert the format first! 
 ######################################################################
-from tkinter import DOTBOX
 
 
 dataset_type = 0

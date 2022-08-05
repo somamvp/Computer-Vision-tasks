@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 3
+dataset_type = 0
 '''
 0 = Dobo 도보 aihub -> 현재 폴더 열람방식 문제있음, 폴더 한겹 추가해야됨
 1 = Chair 휠체어 aihub
@@ -8,14 +8,14 @@ dataset_type = 3
 3 = Wesee 셀렉트스타
 '''
 
-image_process = True
+image_process = False
 imgsize = [640, 360]
-if_compress = True
+if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 
 data_ratio = [8,1,1]  # train/val/test
-src_dir = '../dataset/Wesee'
-target_dir = '../dataset/Wesee_compress50'
+src_dir = '../dataset/Dobo_sample'
+target_dir = '../dataset/Dobo_sample_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 
@@ -59,8 +59,9 @@ def yaml_writer():
                 f.write(', ')
             else:
                 f.write(']')
-        f.write("\n# Dataset statistics: \n#\tTotal imgs: %d\n#\tTotal Bbox: %d\n"%(img_box[0],img_box[1]))
-        f.write("#\tToo small boxes ignored: %d\n"%img_box[2])
+        f.write("\n# Dataset statistics: \n#\tTotal imgs: %d\n#\t\tTrain-Val-Test: [%d,%d,%d]\n"%(img_box[0],
+            train_val_test[0],train_val_test[1],train_val_test[2]))
+        f.write("#\tTotal Bbox: %d\n#\tToo small boxes ignored: %d\n"%(img_box[1], img_box[2]))
         for i in range(len_):
             f.write("#\t\t%s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
@@ -93,68 +94,77 @@ def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
         return str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
 
 def parser_0():
-    folder_list = os.listdir(src_dir)
+    global nc
+    nc=0
     fn=0
-    for folder in folder_list:
+    upper_list = os.listdir(src_dir)
+    for upper_folder in upper_list:
+        lower_list = os.listdir(src_dir+'/'+upper_folder)
         fn+=1
-        file_list = os.listdir(src_dir+'/'+folder)
-        for file in file_list:
-            if file.endswith(".xml"):
-                xml = file
-                break
-        images = [file for file in file_list if file.endswith(".jpg")]
+        print("Processing %s ...  (%d/%d)"%(upper_folder,fn,len(upper_list)))
+    
+        for lower_folder in lower_list:
+            folder = upper_folder+'/'+lower_folder
+            file_list = os.listdir(src_dir+'/'+folder)
+            for file in file_list:
+                if file.endswith(".xml"):
+                    xml = file
+                    break
+            images = [file for file in file_list if file.endswith(".jpg")]
 
-        # xml parsing
-        print("Processing %s ...  (%d/%d)"%(folder,fn,len(folder_list)))
-        with open(src_dir+'/'+folder+'/'+xml,'rt',encoding='UTF8') as f:
-            lines = f.readlines()
-            
-            for i in range(len(lines)):
-                line = lines[i]
-                if "name" not in line or "username" in line or i<10:
-                    continue
-                # Classes
-                if "id" not in line:
-                    class_name = line[line.find('<name>')+6 : line.find("</name>")]
-                    if(class_name not in list(classes.keys())):
-                        classes[class_name] = nc
-                        nc+=1
-                # Annotation
-                else:
-                    image_name = line[line.find('name=')+6 : line.find('.jpg')]
-                    if(not os.path.exists(src_dir+'/'+folder+'/'+image_name+'.jpg')):
-                        print(image_name+'.jpg  [Missing]')
+            # xml parsing
+            with open(src_dir+'/'+folder+'/'+xml,'rt',encoding='UTF8') as f:
+                lines = f.readlines()
+                
+                for i in range(len(lines)):
+                    line = lines[i]
+                    if "name" not in line or "username" in line or i<10:
                         continue
-                    img_box[0]+=1
-                    path = path_generator()
-                    train_val_test[path[1]] += 1
-                    width = float(line[line.find('width')+7 : line.find('height')-2])
-                    height = float(line[line.find('height')+8 : line.find('>')-1])
-                    with open(path[0]+'/labels/'+image_name+'.txt', 'w') as t:
-                        while (1):
-                            i=i+1
-                            if("</image>" in lines[i]):
-                                break
-                            src = lines[i]
-                            img_box[1]+=1
-                            # print(src)
-                            obj = src[src.find('label')+7 : src.find('occ')-2]
-                            xtl = float(src[src.find('xtl')+5 : src.find('ytl')-2])
-                            ytl = float(src[src.find('ytl')+5 : src.find('xbr')-2])
-                            xbr = float(src[src.find('xbr')+5 : src.find('ybr')-2])
-                            ybr = float(src[src.find('ybr')+5 : src.find('z_order')-2])
+                    # Classes
+                    if "id" not in line:
+                        class_name = line[line.find('<name>')+6 : line.find("</name>")]
+                        if(class_name not in list(classes.keys())):
+                            classes[class_name] = nc
+                            cases[class_name]=0
+                            nc+=1
+                    # Annotation
+                    else:
+                        image_name = line[line.find('name=')+6 : line.find('.jpg')]
+                        if(not os.path.exists(src_dir+'/'+folder+'/'+image_name+'.jpg')):
+                            print(image_name+'.jpg  [Missing]')
+                            continue
+                        img_box[0]+=1
+                        path = path_generator()
+                        train_val_test[path[1]] += 1
+                        width = float(line[line.find('width')+7 : line.find('height')-2])
+                        height = float(line[line.find('height')+8 : line.find('>')-1])
+                        with open(path[0]+'/labels/'+image_name+'.txt', 'w') as t:
+                            while (1):
+                                i=i+1
+                                if("</image>" in lines[i]):
+                                    break
+                                src = lines[i]
+                                img_box[1]+=1
                             
-                            parse = parsing(class_name, xtl, ytl, xbr, ybr, width, height)
-                            if not parse:
-                                cases[class_name] -= 1
-                                img_box[1] -= 1
-                                continue
-                            else:
-                                t.write(parse)
-                            i=i+1
-                        t.close()
-                    if(image_process):
-                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
+                                # print(src)
+                                class_name = src[src.find('label')+7 : src.find('occ')-2]
+                                cases[class_name]+=1
+                                xtl = float(src[src.find('xtl')+5 : src.find('ytl')-2])
+                                ytl = float(src[src.find('ytl')+5 : src.find('xbr')-2])
+                                xbr = float(src[src.find('xbr')+5 : src.find('ybr')-2])
+                                ybr = float(src[src.find('ybr')+5 : src.find('z_order')-2])
+                                i=i+1
+                                parse = parsing(class_name, xtl, ytl, xbr, ybr, width, height)
+                                if not parse:
+                                    cases[class_name] -= 1
+                                    img_box[1] -= 1
+                                    continue
+                                else:
+                                    t.write(parse)
+                                
+                            t.close()
+                        if(image_process):
+                            image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
 # 4장 중 한장씩만 입력됨

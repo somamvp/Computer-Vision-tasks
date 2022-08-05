@@ -128,7 +128,7 @@ def parser_0():
                             cases[class_name]=0
                             nc+=1
                     # Annotation
-                    else:
+                    else:                            
                         image_name = line[line.find('name=')+6 : line.find('.jpg')]
                         if(not os.path.exists(src_dir+'/'+folder+'/'+image_name+'.jpg')):
                             print(image_name+'.jpg  [Missing]')

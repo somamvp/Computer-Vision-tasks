@@ -1,8 +1,10 @@
 import os
 from PIL import Image, ImageDraw
 
-src_dir = '../dataset/Chair_sample_parsed/train/'
-wanted = {'19':'standing banner','4':'drainage','13':'unusual bench','2':'bench','15':'pedestrain','8':'kickboard'}
+src_dir = '../dataset/Dobo_sample_parsed/train/'
+wanted={'7':'stroller','8':'stop'}
+# wanted = {'19':'standing banner','4':'drainage','13':'unusual bench',
+#             '8':'kickboard'}   #Chair set
 
 label_path = src_dir+'labels'
 image_path = src_dir+'images'

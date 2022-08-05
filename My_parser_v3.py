@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 1
+dataset_type = 0
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -8,15 +8,15 @@ dataset_type = 1
 3 = COCO [Not Working now]
 '''
 
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 tiny_cutoff = 2000
 
 data_ratio = [8,1,1]  # train/val/test
-src_dir = '../dataset/Chair_sample'
-target_dir = '../dataset/Chair_sample_parsed'
+src_dir = '../dataset/Dobo_sample'
+target_dir = '../dataset/Dobo_sample_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 

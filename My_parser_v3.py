@@ -2,17 +2,17 @@
 # ------------------ Parameters -------------------- #
 dataset_type = 0
 '''
-0 = Dobo 도보 aihub -> 현재 폴더 열람방식 문제있음, 폴더 한겹 추가해야됨
+0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
 2 = Wesee 셀렉트스타
-3 = COCO, 미리 class 줄여놔야됨
+3 = COCO [Not Working now]
 '''
 
 image_process = False
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
-tiny_cutoff = 1000
+tiny_cutoff = 2000
 
 data_ratio = [8,1,1]  # train/val/test
 src_dir = '../dataset/Dobo_sample'

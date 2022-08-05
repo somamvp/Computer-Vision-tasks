@@ -1,11 +1,25 @@
 ######################################################################
 # Only works for YOLO Format. Convert the format first! 
 ######################################################################
+from tkinter import DOTBOX
+
+
+dataset_type = 0
+'''
+0 = Dobo 도보 aihub -> 현재 폴더 열람방식 문제있음, 폴더 한겹 추가해야됨
+1 = Chair 휠체어 aihub
+2 = Wesee 셀렉트스타
+3 = COCO, 미리 class 줄여놔야됨
+'''
 
 yaml_path = 'my_yolov5/data/'
 yaml_name = 'wesee.yaml'
 target_dir = '../dataset/Wesee_Re'
-remain = ['person', 'bicycle', 'car','motorcycle', 'bus', 'train', 'truck', 'fire hydrant','bench']
+
+dobo = 
+chair
+wesee
+coco = ['person', 'bicycle', 'car','motorcycle', 'bus', 'train', 'truck', 'fire hydrant','bench']
 # remain = ['Zebra_Cross']
 ratio_blankimage = 0.3  # Sustain image without any bounding box randomly (0~1)
 

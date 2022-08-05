@@ -1,0 +1,18 @@
+chair
+pot
+bollard
+standing banner
+truck
+baricade
+tree
+manhole
+bicycle
+kickboard
+Leading Block
+Warning Block
+car
+drainage
+bench
+bus
+pedestrian
+labacon

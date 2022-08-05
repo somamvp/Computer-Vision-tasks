@@ -8,14 +8,14 @@ dataset_type = 0
 3 = Wesee 셀렉트스타
 '''
 
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 
 data_ratio = [8,1,1]  # train/val/test
-src_dir = '../dataset/Dobo_sample'
-target_dir = '../dataset/Dobo_sample_parsed'
+src_dir = '../dataset/Dobo'
+target_dir = '../dataset/Dobo_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 
@@ -87,7 +87,7 @@ def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
         ytl=1
     if ybr>=height:
         ybr = height-1
-    if ((xbr-xtl)*(ybr-ytl)) < 1000:
+    if ((xbr-xtl)*(ybr-ytl)) < 2000:
         img_box[2] += 1
         return False
     else:

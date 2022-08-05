@@ -33,8 +33,8 @@ def main():
     # datasets = args.datasets
     # cls_list = args.cls_list_file
 
-    img_path = '../../dataset/Chair_sample_parsed/train/images/'
-    label_path = '../../dataset/Chair_sample_parsed/train/labels/'
+    img_path = '../../dataset/Dobo_sample_parsed/test/images/'
+    label_path = '../../dataset/Dobo_sample_parsed/test/labels/'
     img_type = '.jpg'
     datasets = 'YOLO'
     cls_list = './chair.txt'

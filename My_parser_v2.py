@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 1
+dataset_type = 3
 '''
 0 = Dobo 도보 aihub -> 현재 폴더 열람방식 문제있음, 폴더 한겹 추가해야됨
 1 = Chair 휠체어 aihub
@@ -10,16 +10,14 @@ dataset_type = 1
 
 image_process = True
 imgsize = [640, 360]
-if_compress = False
-jpg_quality = 75  # value: 1~95  (default=75)
+if_compress = True
+jpg_quality = 50  # value: 1~95  (default=75)
 
 data_ratio = [8,1,1]  # train/val/test
-src_dir = '../dataset/Chair_sample'
-target_dir = '../dataset/Chair_sample_parsed'
+src_dir = '../dataset/Wesee'
+target_dir = '../dataset/Wesee_compress50'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
-# src_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/Bbox_1_new'
-# target_dir = 'C:/Users/dklee/Downloads/Aihub_pedestrian_sample/parsed'
 
 #######################################################
 
@@ -159,14 +157,20 @@ def parser_0():
                         image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
+# 4장 중 한장씩만 입력됨
 def parser_1():
     global nc
     nc=0
     for type in ['/train','/val']:
+    # for type in ['/val']:
+        fn=0
         label_folders = os.listdir(src_dir+type+'/labels')
         if len(label_folders)==0:
             continue
+        
         for label_folder in label_folders:
+            fn+=1
+            print("%s folder (%d/%d)..."%(type, fn, len(label_folders)))
             if(os.path.exists(src_dir+type+'/labels/'+label_folder+'/Out/Day')):
                 period = "Day"
             elif(os.path.exists(src_dir+type+'/labels/'+label_folder+'/Out/Night')):
@@ -176,20 +180,24 @@ def parser_1():
                 return
             location = os.listdir(src_dir+type+'/labels/'+label_folder+'/Out/'+period)[0]
             label_path = src_dir+type+'/labels/'+label_folder+'/Out/'+period+'/'+location+'/Left'
-            image_path = src_dir+type+'/images/'+'TS'+label_folder[2:]+'/Out/'+period+'/'+location+'/Left'
+            image_path = src_dir+type+'/images/'+label_folder[0]+'S'+label_folder[2:]+'/Out/'+period+'/'+location+'/Left'
             label_list = os.listdir(label_path)
             # print(len(label_list))
 
             if type=='/train':
-                train_val_test[0] += len(label_list)
+                train_val_test[0] += int(len(label_list)/4)
             else:
-                train_val_test[1] += len(label_list)
+                train_val_test[1] += int(len(label_list)/4)
             img_box[0] += len(label_list)
 
+            mod=0
             for label in label_list:
+                mod = (mod+1)%4
+                if mod!=3:
+                    continue
                 with open(label_path+'/'+label, 'r') as l:
                     j = json.load(l)
-                    file_name = location+'_'+label[label.find("Left_")+5:label.find(".json")]
+                    file_name = location+'_'+period+label[label.find("Left_")+5:label.find(".json")]
                     with open(target_dir+type+'/labels/'+file_name+'.txt','w') as t:
                         img_box[1] += len(j["shapes"])
                         for feature in j["shapes"]:
@@ -236,6 +244,8 @@ def parser_2():
     return
 
 def parser_3():
+    global nc
+    nc=0
     folder_list = os.listdir(src_dir)
     fn=0
     
@@ -304,6 +314,9 @@ def parser_3():
 
 
 def main():
+    if src_dir==target_dir:
+        print("ERROR : 소스 폴더와 타켓 폴더가 같습니다")
+        return
     if os.path.exists(target_dir):
         if(len(os.listdir(target_dir))>0):
             ans = input("타겟 폴더 내부에 파일이 있습니다. 전부 지우고 계속 하시겠습니까? [y,n] : ")
@@ -318,9 +331,6 @@ def main():
         'test','test/images','test/labels']
     for tmp in dir_list:
         os.mkdir(target_dir+'/'+tmp)
-    
-    global nc
-    nc=0
 
     if(dataset_type==0):
         parser_0()

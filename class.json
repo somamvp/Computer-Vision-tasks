@@ -1,9 +1,9 @@
 {
 	"Final":
 		{"Original" : ["Zebra_Cross", "R_Signal", "G_Signal", "Braille_Block",	
-						"person", "dog", "cat", "tree",
+						"person", "dog", "tree",
 						"car", "bus", "truck", "motorcycle", "scooter", "bicycle", "train", "wheelchair", "kickboard",	
-						"bollard", "manhole", "labacon", "bench", "barricade","drainage", "pot", "table", "chair", "fire_hydrant",
+						"bollard", "manhole", "labacon", "bench", "barricade", "pot", "table", "chair", "fire_hydrant",
 						""],
 		"Opinion":[]},
 

@@ -1,11 +1,38 @@
 {
 	"Final":
 		{"Original" : ["Zebra_Cross", "R_Signal", "G_Signal", "Braille_Block",	
-						"person", "dog", "tree",
-						"car", "bus", "truck", "motorcycle", "bicycle", "train", "wheelchair", "kickboard",	
-						"bollard", "manhole", "labacon", "bench", "barricade","drainage", "pot", "table", "chair", "fire_hydrant",
-						"stroller", "movable_signage"],
-		"Opinion":[]},
+			"person", "dog", "tree",
+			"car", "bus", "truck", "motorcycle", "bicycle", "train", "wheelchair", "kickboard",	
+			"bollard", "manhole", "labacon", "bench", "barricade","drainage", "pot", "table", "chair", "fire_hydrant",
+			"stroller", "movable_signage"],
+		"Opinion":[],
+		"Mapping":{"Zebra_Cross":0,
+		"R_Signal":0,
+		"G_Signal":0,
+		"Braille_Block"	
+		"person"
+		"dog"
+		"tree"
+		"car"
+		"bus"
+		"truck"
+		"motorcycle"
+		"bicycle"
+		"train"
+		"wheelchair"
+		"kickboard"	
+		"bollard"
+		"manhole"
+		"labacon"
+		"bench"
+		"barricade"
+		"drainage"
+		"pot"
+		"table"
+		"chair"
+		"fire_hydrant"
+		"stroller"
+		"movable_signage"}},
 
 	"Dobo":
 		{"Original" : ["wheelchair", "truck", "tree_trunk", "traffic_sign", "traffic_light", "traffic_light_controller",
@@ -15,13 +42,14 @@
 		"Opinion":["carrier는 리어카,쇼핑카트 등 끌고다니는 모든것","barricade는 괜찮은데 종류가 너무 다양함",
 			"movable sign은 입간판이랑 주차금지 표지가 섞여있음","koisk는 공중전화거나 의경초소","parking meter는 주차정산기",
 			"stroller유모차","stop버스정류장","power controller 필요없음","scooter전동및수동 킥보드"],
-		"Valid" : []},
+		"Mapping" : []},
 	
 	"Chair":
 		{"Original" : ["baricade", "bicycle", "bench", "bollard", "drainage", "chair", "car", "bus", "kickboard", "motorcycle",
 			"traffic sign", "manhole", "labacon", "unusual bench", "tree", "pedestrian", "Leading Block", "Warning Block", "truck", "standing banner",
 			"pot", "wheelchair"],
-		"Opinion":["drainage는 사용하지 말것","unusual bench는 아직 확인 안됨","standing banner안내판"],
+		"Opinion":["drainage는 사용하지 말것","unusual bench는 돌로 벤치 느낌인데 이상하게 생긴 벤치들도 있음","standing banner안내판",
+			"chair클래스는 좋은데 bbox갯수가 너무 적음"],
 		"Valid" : []} ,
 
 	"Wesee":

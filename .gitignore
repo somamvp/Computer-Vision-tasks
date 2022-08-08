@@ -23,6 +23,7 @@
 *.pt
 !my_yolov5/setup.cfg
 !my_yolov5/cfg/yolov3*.cfg
+!class.json
 
 my_yolov5/storage.googleapis.com
 my_yolov5/runs/*

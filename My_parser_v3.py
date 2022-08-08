@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 0
+dataset_type = 2
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -8,21 +8,20 @@ dataset_type = 0
 3 = COCO [Not Working now]
 '''
 
-image_process = True
+image_process = False
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
-tiny_cutoff = 1500
-force_classing=True
+tiny_cutoff = 150  # 640 이미지 기준 픽셀수
+large_cutoff = 1000000 # 640 이미지 기준 픽셀수 (1/4)
+force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Dobo_sample'
-target_dir = '../dataset/Dobo_sample_parsed'
-# src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
-# target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
+src_dir = '../dataset/Wesee_sample'
+target_dir = '../dataset/Wesee_sample_parsed'
 
 # Ver3 변경사항 :
-# - Path가 랜덤하게 생성되지 않음
+# - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류된다
 # - Annotation만 생성 시 이미지는 보존됨
 # - class.json으로 정해진 클래스를 강제 적용하도록 함
 #######################################################
@@ -30,7 +29,7 @@ target_dir = '../dataset/Dobo_sample_parsed'
 classes={}  # Key : class name, Value : int allocated to that class
 cases={}  # Key : class name, Value : number of its bbox
 train_val_test=[0,0,0]  # Number of each type of data [train, val, test]
-img_box=[0,0,0]   # Number of total [images, bboxes, tiny_boxes]
+img_box=[0,0,0,0]   # Number of total [images, bboxes, tiny, large]
 global nc
 nc=0
 
@@ -40,14 +39,14 @@ import shutil
 import random
 import json
 
-def path_generator():
+def path_generator(indicator):
     dest=0
-    total_score = sum(data_ratio)
-    tmp = random.random()
-    if(tmp < data_ratio[0]/total_score):
+    # total_score = sum(data_ratio)
+    # tmp = random.random()
+    if(int(indicator) < data_ratio[0]):
         path = target_dir+'/train'
         dest=0
-    elif(tmp < (data_ratio[0]+data_ratio[1])/total_score):
+    elif(int(indicator) < (data_ratio[0]+data_ratio[1])):
         path = target_dir+'/val'
         dest=1
     else:
@@ -69,7 +68,8 @@ def yaml_writer():
                 f.write(']')
         f.write("\n# Dataset statistics: \n#\tTotal imgs: %d\n#\t\tTrain-Val-Test: [%d,%d,%d]\n"%(img_box[0],
             train_val_test[0],train_val_test[1],train_val_test[2]))
-        f.write("#\tTotal Bbox: %d\n#\tToo small boxes ignored: %d\n"%(img_box[1], img_box[2]))
+        f.write("#\tToo small boxes ignored: %d\n#\tTotal Bbox: %d\n"%(img_box[2], img_box[1]))
+        # f.write("#\tToo large boxes ignored: %d\n"%img_box[3])
         for i in range(len_):
             f.write("#\t\t%s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
@@ -92,8 +92,12 @@ def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
         ytl=1
     if ybr>=height:
         ybr = height-1
-    if ((xbr-xtl)*(ybr-ytl)) < tiny_cutoff:
+    area = ((xbr-xtl)*(ybr-ytl))*imgsize[0]/width*imgsize[1]/height
+    if area < tiny_cutoff:
         img_box[2] += 1
+        return False
+    elif area > large_cutoff:
+        img_box[3] += 1
         return False
     else:
         return str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
@@ -138,7 +142,7 @@ def parser_0():
                             print(image_name+'.jpg  [Missing]')
                             continue
                         img_box[0]+=1
-                        path = path_generator()
+                        path = path_generator(image_name[-2])
                         train_val_test[path[1]] += 1
                         width = float(line[line.find('width')+7 : line.find('height')-2])
                         height = float(line[line.find('height')+8 : line.find('>')-1])
@@ -171,8 +175,8 @@ def parser_0():
                             image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
-# 4장 중 한장씩만 입력됨
 def parser_1():
+    mod=3  # 3장 중 한장씩만 입력됨
     global nc
     for type in ['/train','/val']:
     # for type in ['/val']:
@@ -195,19 +199,17 @@ def parser_1():
             label_path = src_dir+type+'/labels/'+label_folder+'/Out/'+period+'/'+location+'/Left'
             image_path = src_dir+type+'/images/'+label_folder[0]+'S'+label_folder[2:]+'/Out/'+period+'/'+location+'/Left'
             label_list = os.listdir(label_path)
-            # print(len(label_list))
 
-            if type=='/train':
-                train_val_test[0] += int(len(label_list)/4)
-            else:
-                train_val_test[1] += int(len(label_list)/4)
-            img_box[0] += len(label_list)
-
-            mod=0
+            iter=0
             for label in label_list:
-                mod = (mod+1)%4
-                if mod!=3:
+                iter = (iter+1)%mod
+                if iter!=mod-1:
                     continue
+                if type=='/train':
+                    train_val_test[0] += 1
+                else:
+                    train_val_test[1] += 1
+                img_box[0] += 1
                 with open(label_path+'/'+label, 'r') as l:
                     j = json.load(l)
                     file_name = location+'_'+period+label[label.find("Left_")+5:label.find(".json")]
@@ -255,7 +257,6 @@ def parser_1():
 
 def parser_2():
     global nc
-    nc=0
     folder_list = os.listdir(src_dir)
     fn=0
     
@@ -270,13 +271,14 @@ def parser_2():
                 with open(folder_dir+file, 'r') as f:
                     j = json.load(f)                    
                     image_file = j["imagePath"]
+                    image_name = image_file[:image_file.find(".jpg")]
                     if(not os.path.exists(folder_dir+image_file)):
                         print(image_file+'  [Missing]: json=%s%s'%(folder_dir,file))
                         break
                     
                     img_box[0]+=1
                     img_box[1]+=len(j["shapes"])
-                    path = path_generator()
+                    path = path_generator(image_name[-2])
                     train_val_test[path[1]] += 1
 
                     #사진이 jpg도 있고 png도 있음
@@ -343,7 +345,7 @@ def main():
     if src_dir==target_dir:
         print("ERROR : 소스 폴더와 타켓 폴더가 같습니다")
         return
-    for dir in ['/train','/val','/test','/train/labels','/val/labels','/test/labels'
+    for dir in ['','/train','/val','/test','/train/labels','/val/labels','/test/labels'
                 ,'/train/images','/val/images','/test/images']:
         if not os.path.exists(target_dir+dir):
             os.mkdir(target_dir+dir)

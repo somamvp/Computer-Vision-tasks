@@ -4,7 +4,7 @@ dataset_type = 0
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
-2 = Wesee 셀렉트스타
+2 = Wesee 신호등 셀렉트스타
 3 = COCO [Not Working now]
 '''
 
@@ -12,16 +12,19 @@ image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
-tiny_cutoff = 2000
+tiny_cutoff = 1500
+force_classing=True
 
-data_ratio = [8,1,1]  # train/val/test
+data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
 src_dir = '../dataset/Dobo_sample'
 target_dir = '../dataset/Dobo_sample_parsed'
 # src_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_sample'
 # target_dir = 'C:/Users/dklee/Downloads/MVP/dataset/Wesee_parsed'
 
-force_classing=True
-
+# Ver3 변경사항 :
+# - Path가 랜덤하게 생성되지 않음
+# - Annotation만 생성 시 이미지는 보존됨
+# - class.json으로 정해진 클래스를 강제 적용하도록 함
 #######################################################
 
 classes={}  # Key : class name, Value : int allocated to that class
@@ -79,9 +82,6 @@ def image_maker(img_dir, image_name, store_dir, store_name):
         img_resize.save(store_dir+'/'+store_name, quality=jpg_quality)
     else:
         img_resize.save(store_dir+'/'+store_name)
-
-# def image_maker(img_dir, image_name, store_dir):
-#     image_maker(img_dir, image_name, store_dir, image_name)
     
 def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
     if xtl<=0:

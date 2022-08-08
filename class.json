@@ -2,7 +2,7 @@
 	"Final":
 		{"Original" : ["Zebra_Cross", "R_Signal", "G_Signal", "Braille_Block",	
 						"person", "dog", "tree",
-						"car", "bus", "truck", "motorcycle", "scooter", "bicycle", "train", "wheelchair", "kickboard",	
+						"car", "bus", "truck", "motorcycle", "bicycle", "train", "wheelchair", "kickboard",	
 						"bollard", "manhole", "labacon", "bench", "barricade","drainage", "pot", "table", "chair", "fire_hydrant",
 						"stroller", "movable_signage"],
 		"Opinion":[]},
@@ -14,7 +14,7 @@
 			"bollard", "bicycle", "bench", "barricade"], 
 		"Opinion":["carrier는 리어카,쇼핑카트 등 끌고다니는 모든것","barricade는 괜찮은데 종류가 너무 다양함",
 			"movable sign은 입간판이랑 주차금지 표지가 섞여있음","koisk는 공중전화거나 의경초소","parking meter는 주차정산기",
-			"stroller유모차","stop버스정류장","power controller 확인안됨"],
+			"stroller유모차","stop버스정류장","power controller 필요없음","scooter전동및수동 킥보드"],
 		"Valid" : []},
 	
 	"Chair":

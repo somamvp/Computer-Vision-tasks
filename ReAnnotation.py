@@ -1,8 +1,8 @@
 ######################################################################
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
-yaml_path = '../dataset/Dobo_sample_parsed'
-yaml_name = 'data.yaml'
+global src_dir
+src_dir = '../dataset/Wesee_parsed'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
@@ -24,7 +24,6 @@ dataset_type = 5
 #######################################################################
 
 import yaml, os, random, shutil, json
-global src_dir
 target_class={}  # 통합클래스이름:통합라벨
 to_unified_class={}  # 기존클래스이름:통합클래스이름
 src_class={}  # 기존클래스이름:기존라벨
@@ -83,7 +82,8 @@ def reannotation():
                             continue
 
                     bbox[0] = str(mapping[int(label)])
-                    bboxes.append(bbox)
+                    if bbox not in bboxes:
+                        bboxes.append(bbox)
                 # print(len(bboxes))
 
                 if(len(bboxes)==0):  # 라벨이 하나도 없는 경우
@@ -109,7 +109,8 @@ def reannotation():
 
 def yaml_writer_ReAnnotation():
     global final
-    with open(src_dir+"/data_RA.yaml", 'w') as f:
+    
+    with open(src_dir+"/data.yaml", 'w') as f:
         f.write("path: "+src_dir+"\ntrain: train/images\nval: val/images\n")
         f.write("test: test/images\n\nnc: %d\nnames: ["%len(final))
         len_ = len(final)
@@ -132,7 +133,12 @@ def data_init(data_name):
     global src_class, target_class, src_dir, to_unified_class
     global final
     
-    src_yaml = yaml.safe_load(open(yaml_path +'/'+ yaml_name, encoding='UTF-8'))
+    if os.path.exists(src_dir+"/data_old.yaml"):
+        if os.path.exists(src_dir+"/data.yaml"):
+            os.remove(src_dir+"/data.yaml")
+    else:
+        os.rename(src_dir+"/data.yaml", src_dir+"/data_old.yaml")
+    src_yaml = yaml.safe_load(open(src_dir +'/data_old.yaml', encoding='UTF-8'))
     cnt=0
     for name in src_yaml["names"]:
         src_class[name] = cnt
@@ -142,18 +148,18 @@ def data_init(data_name):
     class_json = json.load(open('class.json','r', encoding='UTF-8'))
     target_class = class_json["Final"]["Label"]
     to_unified_class = class_json[data_name]["Mapping"]  
-    final = list(class_json["Final"]["Label"].keys())
+    final = class_json["Final"]["Original"]
     for name in final:
         cases[name] = 'Invalid'
 
 def main():
-    if("wesee" in yaml_path.lower() or "wesee" in yaml_name.lower()):
+    if("wesee" in src_dir.lower()):
         data_name = 'Wesee'
-    elif("dobo" in yaml_path.lower() or "dobo" in yaml_name.lower()):
+    elif("dobo" in src_dir.lower()):
         data_name = 'Dobo'
-    elif("chair" in yaml_path.lower() or "chair" in yaml_name.lower()):
+    elif("chair" in src_dir.lower()):
         data_name = 'Chair'
-    elif("coco" in yaml_path.lower() or "coco" in yaml_name.lower()):
+    elif("coco" in src_dir.lower()):
         data_name = 'Coco'
     else:
         print("Dataset type auto detect failed. Switching to manual")
@@ -172,7 +178,6 @@ def main():
     data_init(data_name)
     assigned = False
 
-    global src_dir
     if not os.path.exists(src_dir):
         print("데이터셋 경로가 존재하지 않습니다")
         return
@@ -196,6 +201,8 @@ def main():
     make_mapping()
     reannotation()
     yaml_writer_ReAnnotation()
+    print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
+        train_val_test[1], train_val_test[2]))
 
 if __name__ == "__main__":
     main()

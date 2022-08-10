@@ -1,5 +1,21 @@
 ######################################################
 # ------------------ Parameters -------------------- #
+image_process = False
+imgsize = [640, 360]
+if_compress = False
+jpg_quality = 50  # value: 1~95  (default=75)
+force_classing = True
+
+data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
+src_dir = '../dataset/Wesee'
+target_dir = src_dir+'_parsed'
+
+# Ver3 변경사항 :
+# - 데이터셋 타입이 자동으로 인식됨
+# - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
+# - Annotation만 생성 시 이미지는 보존됨
+# - class.json으로 정해진 클래스를 강제 적용하도록 함
+#######################################################
 dataset_type = 0
 '''
 0 = Dobo 도보 aihub
@@ -7,21 +23,6 @@ dataset_type = 0
 2 = Wesee 신호등 셀렉트스타
 3 = COCO [Not Working now]
 '''
-
-image_process = True
-imgsize = [640, 360]
-if_compress = False
-jpg_quality = 50  # value: 1~95  (default=75)
-force_classing = True
-
-data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Dobo'
-target_dir = '../dataset/Dobo_parsed'
-
-# Ver3 변경사항 :
-# - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
-# - Annotation만 생성 시 이미지는 보존됨
-# - class.json으로 정해진 클래스를 강제 적용하도록 함
 #######################################################
 
 classes={}  # Key : class name, Value : int allocated to that class
@@ -160,13 +161,8 @@ def parser_0():
                                 ybr = float(src[src.find('ybr')+5 : src.find('z_order')-2])
                                 i=i+1
                                 parse = parsing(class_name, xtl, ytl, xbr, ybr, width, height)
-                                if not parse:
-                                    cases[class_name] -= 1
-                                    img_box[1] -= 1
-                                else:
-                                    t.write(parse)
+                                t.write(parse)
                                 
-                            t.close()
                         img_box[0]+=1
                         if(image_process):
                             image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
@@ -318,8 +314,8 @@ def parser_2():
                             else:
                                 t.write(parse)
                         t.close 
-            if(image_process):
-                image_maker(folder_dir, image_file, path[0]+'/images', image_file)
+                if(image_process):
+                    image_maker(folder_dir, image_file, path[0]+'/images', image_file)
     return
 
 def parser_3():
@@ -343,44 +339,64 @@ def main():
     if src_dir==target_dir:
         print("ERROR : 소스 폴더와 타켓 폴더가 같습니다")
         return
-    for dir in ['','/train','/val','/test','/train/labels','/val/labels','/test/labels'
-                ,'/train/images','/val/images','/test/images']:
-        if not os.path.exists(target_dir+dir):
-            os.mkdir(target_dir+dir)
-    delete_list = ['/train/labels','/val/labels','/test/labels']
+    if not os.path.exists(target_dir):
+        os.mkdir(target_dir)
 
     if image_process:
-        deletion=['/train/images','/val/images','/test/images']
-        for delete in deletion:
-            if os.path.exists(target_dir+delete):
-                if len(os.listdir(target_dir+delete))>0:
-                    ans = input("타겟 폴더 내부 이미지가 전부 지워집니다. 계속 하시겠습니까? [y,n] : ")
-                    if(ans!='y'):
-                        return
-                    break
-        for delete in deletion:
-            delete_list.append(delete)
-
-    for dir in delete_list:
-        if os.path.exists(target_dir+dir):
-            shutil.rmtree(target_dir+dir)
-        os.mkdir(target_dir+dir)
-    
-    if(dataset_type==0):
-        class_init('Dobo')
-        parser_0()
-    elif(dataset_type==1):
-        class_init('Chair')
-        parser_1()
-    elif(dataset_type==2):
-        class_init('Wesee')
-        parser_2()
-    elif(dataset_type==3):
-        class_init('Coco')
-        parser_3()
+        ans = input("타겟 폴더 내부 이미지가 전부 지워집니다. 계속 하시겠습니까? [y,n] : ")
+        if(ans!='y'):
+            return
+        shutil.rmtree(target_dir)
+        for dir in ['','/train','/val','/test','/train/labels','/val/labels','/test/labels'
+                ,'/train/images','/val/images','/test/images']:
+            os.mkdir(target_dir+dir)
     else:
-        print("Wrong dataset_type value")
-        return
+        delete_list = ['/train/labels','/val/labels','/test/labels','/train/labels_old','/val/labels_old','/test/labels_old']
+        for dir in delete_list:
+            if os.path.exists(target_dir+dir):
+                shutil.rmtree(target_dir+dir)
+        for dir in ['','/train','/val','/test','/train/labels','/val/labels','/test/labels'
+                ,'/train/images','/val/images','/test/images']:
+            if not os.path.exists(target_dir+dir):
+                os.mkdir(target_dir+dir)
+    if os.path.exists(target_dir+'/data.yaml'):
+        os.remove(target_dir+'/data.yaml')
+    if os.path.exists(target_dir+'/data_old.yaml'):
+        os.remove(target_dir+'/data_old.yaml')
+
+    if("wesee" in src_dir.lower() or "wesee" in target_dir.lower()):
+        data_name = 'Wesee'
+    elif("dobo" in src_dir.lower() or "dobo" in target_dir.lower()):
+        data_name = 'Dobo'
+    elif("chair" in src_dir.lower() or "chair" in target_dir.lower()):
+        data_name = 'Chair'
+    elif("coco" in src_dir.lower() or "coco" in target_dir.lower()):
+        data_name = 'Coco'
+    else:
+        print("Dataset type auto detect failed. Switching to manual")
+        if dataset_type==0:
+            data_name = "Dobo"
+        elif dataset_type==1:
+            data_name = "Chair"
+        elif dataset_type==2:
+            data_name = "Wesee"
+        elif dataset_type==3:
+            data_name = "Coco"
+        else:
+            print("Wrong dataset type number")
+            return
+    print(f"Selected dataset_type: {data_name}")
+
+    class_init(data_name)
+    if(data_name=='Dobo'):
+        parser_0()
+    elif(data_name=='Chair'):
+        parser_1()
+    elif(data_name=='Wesee'):
+        parser_2()
+    elif(data_name=='Coco'):
+        parser_3()
+
     # Write data.yaml
     yaml_writer()
     if train_val_test[2]==0:

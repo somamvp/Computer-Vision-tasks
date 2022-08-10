@@ -165,6 +165,8 @@ def main():
         return
     traversal = ['/train','/val','/test']
     for folder in traversal:
+        if(not os.path.exists(src_dir+folder)):
+            continue
         folder_path = src_dir+folder+'/labels'
         if os.path.exists(folder_path):
             if not os.path.exists(src_dir+folder+'/labels_old'):

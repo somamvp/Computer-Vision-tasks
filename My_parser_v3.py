@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 0
+dataset_type = 1
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -8,7 +8,7 @@ dataset_type = 0
 3 = COCO [Not Working now]
 '''
 
-image_process = True
+image_process = False
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
@@ -17,8 +17,8 @@ large_cutoff = 1000000 # 640 이미지 기준 픽셀수 [Not working]
 force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Dobo'
-target_dir = '../dataset/Dobo_parsed'
+src_dir = '../dataset/Chair'
+target_dir = '../dataset/Chair_parsed'
 
 # Ver3 변경사항 :
 # - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨

@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 1
+dataset_type = 0
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -12,13 +12,11 @@ image_process = False
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
-tiny_cutoff = 150  # 640 이미지 기준 픽셀수
-large_cutoff = 1000000 # 640 이미지 기준 픽셀수 [Not working]
 force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Chair'
-target_dir = '../dataset/Chair_parsed'
+src_dir = '../dataset/Dobo_sample'
+target_dir = '../dataset/Dobo_sample_parsed'
 
 # Ver3 변경사항 :
 # - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
@@ -68,7 +66,7 @@ def yaml_writer():
                 f.write(']')
         f.write("\n# Dataset statistics: \nTotal imgs: %d\nTrain-Val-Test: [%d,%d,%d]\n\n"%(img_box[0],
             train_val_test[0],train_val_test[1],train_val_test[2]))
-        f.write("Too small boxes ignored: %d\nToo large boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
+        # f.write("Too small boxes ignored: %d\nToo large boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(len_):
             f.write("    %s: %d\n"%(class_[i],cases[class_[i]]))
@@ -92,15 +90,14 @@ def parsing(class_name, xtl, ytl, xbr, ybr, width, height):
         ytl=1
     if ybr>=height:
         ybr = height-1
-    area = ((xbr-xtl)*(ybr-ytl))*imgsize[0]/width*imgsize[1]/height
-    if area < tiny_cutoff:
-        img_box[2] += 1
-        return False
-    elif area > large_cutoff:
-        img_box[3] += 1
-        return False
-    else:
-        return str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
+    # area = ((xbr-xtl)*(ybr-ytl))*imgsize[0]/width*imgsize[1]/height
+    # if area < tiny_cutoff:
+    #     img_box[2] += 1
+    #     return False
+    # elif area > large_cutoff:
+    #     img_box[3] += 1
+    #     return False
+    return str(classes[class_name])+' '+str((xbr+xtl)/2/width)+' '+str((ybr+ytl)/2/height)+' '+str(abs(xbr-xtl)/width)+' '+str(abs(ybr-ytl)/height)+'\n'
 
 def parser_0():
     global nc
@@ -141,7 +138,7 @@ def parser_0():
                         if(not os.path.exists(src_dir+'/'+folder+'/'+image_name+'.jpg')):
                             print(image_name+'.jpg  [Missing]')
                             continue
-                        img_box[0]+=1
+                        
                         path = path_generator(image_name[-2])
                         train_val_test[path[1]] += 1
                         width = float(line[line.find('width')+7 : line.find('height')-2])
@@ -166,13 +163,13 @@ def parser_0():
                                 if not parse:
                                     cases[class_name] -= 1
                                     img_box[1] -= 1
-                                    continue
                                 else:
                                     t.write(parse)
                                 
                             t.close()
-                        if(image_process):
-                            image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
+                    img_box[0]+=1
+                    if(image_process):
+                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
 def parser_1():
@@ -321,8 +318,8 @@ def parser_2():
                             else:
                                 t.write(parse)
                         t.close 
-                    if(image_process):
-                        image_maker(folder_dir, image_file, path[0]+'/images', image_file)
+            if(image_process):
+                image_maker(folder_dir, image_file, path[0]+'/images', image_file)
     return
 
 def parser_3():

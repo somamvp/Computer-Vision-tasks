@@ -13,7 +13,7 @@
 "train":12,
 "wheelchair":13,
 "stroller":14,
-"kickboard"	:15,
+"kickboard":15,
 "bollard":16,
 "manhole":17,
 "labacon":18,

@@ -85,7 +85,7 @@
 		"Opinion":["drainage는 사용하지 말것","unusual bench는 대부분 돌로된 벤치 느낌인데 박스가 안쳐진 비중이 높다",
 			"standing banner안내판", "chair클래스는 좋은데 bbox갯수가 너무 적음"],
 		"Mapping" : {
-			"baricade":"baricade", 
+			"baricade":"barricade", 
 			"bicycle":"bicycle", 
 			"bench":"bench", 
 			"bollard":"bollard", 

@@ -1,0 +1,44 @@
+path: ../../dataset/Dobo_parsed
+train: train/images
+val: val/images
+test: test/images
+
+nc: 27
+names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'train', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
+# Dataset statistics: 
+Total imgs: 278175
+Train-Val-Test: [220708,27551,27538]
+Blank images ignored: 2378
+
+Too small boxes ignored: 0
+Too large boxes ignored: 0
+
+Total Bbox: 2057296
+Bbox distribution:
+    Zebra_Cross: Invalid
+    R_Signal: Invalid
+    G_Signal: Invalid
+    Braille_Block: Invalid
+    person: 334861
+    dog: 9620
+    tree: 362176
+    car: 677446
+    bus: 41303
+    truck: 119097
+    motorcycle: 52233
+    bicycle: 45384
+    train: Invalid
+    wheelchair: 3663
+    stroller: 5620
+    kickboard: 1714
+    bollard: 135979
+    manhole: Invalid
+    labacon: Invalid
+    bench: 18644
+    barricade: 14527
+    pot: 64653
+    table: 8061
+    chair: 26669
+    fire_hydrant: 8380
+    movable_signage: 112967
+    bus_stop: 14299

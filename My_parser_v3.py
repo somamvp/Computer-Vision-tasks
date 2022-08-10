@@ -1,6 +1,6 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 2
+dataset_type = 0
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -8,7 +8,7 @@ dataset_type = 2
 3 = COCO [Not Working now]
 '''
 
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
@@ -17,8 +17,8 @@ large_cutoff = 1000000 # 640 이미지 기준 픽셀수 (1/4)
 force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Wesee_sample'
-target_dir = '../dataset/Wesee_sample_parsed'
+src_dir = '../dataset/Dobo'
+target_dir = '../dataset/Dobo_parsed'
 
 # Ver3 변경사항 :
 # - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류된다
@@ -43,7 +43,7 @@ def path_generator(indicator):
     dest=0
     # total_score = sum(data_ratio)
     # tmp = random.random()
-    if(int(indicator) < data_ratio[0]):
+    if(not indicator.isnumeric() or int(indicator) < data_ratio[0]):
         path = target_dir+'/train'
         dest=0
     elif(int(indicator) < (data_ratio[0]+data_ratio[1])):
@@ -271,7 +271,9 @@ def parser_2():
                 with open(folder_dir+file, 'r') as f:
                     j = json.load(f)                    
                     image_file = j["imagePath"]
-                    image_name = image_file[:image_file.find(".jpg")]
+
+                    #사진이 jpg도 있고 png도 있음
+                    image_name = image_file[:image_file.find(".")]
                     if(not os.path.exists(folder_dir+image_file)):
                         print(image_file+'  [Missing]: json=%s%s'%(folder_dir,file))
                         break
@@ -281,8 +283,7 @@ def parser_2():
                     path = path_generator(image_name[-2])
                     train_val_test[path[1]] += 1
 
-                    #사진이 jpg도 있고 png도 있음
-                    with open(path[0]+'/labels/'+image_file[:image_file.find(".")]+'.txt', 'w') as t:
+                    with open(path[0]+'/labels/'+image_name+'.txt', 'w') as t:
                         for i in range(len(j["shapes"])):
                             class_name = j["shapes"][i]["label"]
 

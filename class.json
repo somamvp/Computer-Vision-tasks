@@ -1,10 +1,6 @@
 {
 	"Final":{
-		"Original" : ["Zebra_Cross", "R_Signal", "G_Signal", "Braille_Block",	
-			"person", "dog", "tree",
-			"car", "bus", "truck", "motorcycle", "bicycle", "train", "wheelchair", "kickboard",	
-			"bollard", "manhole", "labacon", "bench", "barricade","drainage", "pot", "table", "chair", "fire_hydrant",
-			"stroller", "movable_signage"],
+		"Original" : [],
 		"Opinion":[],
 		"Label":{
 			"Zebra_Cross":0,

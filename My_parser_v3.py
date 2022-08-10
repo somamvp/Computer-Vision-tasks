@@ -1,13 +1,5 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-dataset_type = 0
-'''
-0 = Dobo 도보 aihub
-1 = Chair 휠체어 aihub
-2 = Wesee 신호등 셀렉트스타
-3 = COCO [Not Working now]
-'''
-
 image_process = False
 imgsize = [640, 360]
 if_compress = False
@@ -19,9 +11,18 @@ src_dir = '../dataset/Dobo_sample'
 target_dir = '../dataset/Dobo_sample_parsed'
 
 # Ver3 변경사항 :
+# - 데이터셋 타입이 자동으로 인식됨
 # - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
 # - Annotation만 생성 시 이미지는 보존됨
 # - class.json으로 정해진 클래스를 강제 적용하도록 함
+#######################################################
+dataset_type = 0
+'''
+0 = Dobo 도보 aihub
+1 = Chair 휠체어 aihub
+2 = Wesee 신호등 셀렉트스타
+3 = COCO [Not Working now]
+'''
 #######################################################
 
 classes={}  # Key : class name, Value : int allocated to that class
@@ -167,9 +168,9 @@ def parser_0():
                                     t.write(parse)
                                 
                             t.close()
-                    img_box[0]+=1
-                    if(image_process):
-                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
+                        img_box[0]+=1
+                        if(image_process):
+                            image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
 def parser_1():
@@ -365,22 +366,40 @@ def main():
         if os.path.exists(target_dir+dir):
             shutil.rmtree(target_dir+dir)
         os.mkdir(target_dir+dir)
-    
-    if(dataset_type==0):
-        class_init('Dobo')
-        parser_0()
-    elif(dataset_type==1):
-        class_init('Chair')
-        parser_1()
-    elif(dataset_type==2):
-        class_init('Wesee')
-        parser_2()
-    elif(dataset_type==3):
-        class_init('Coco')
-        parser_3()
+
+    if("wesee" in src_dir.lower() or "wesee" in target_dir.lower()):
+        data_name = 'Wesee'
+    elif("dobo" in src_dir.lower() or "dobo" in target_dir.lower()):
+        data_name = 'Dobo'
+    elif("chair" in src_dir.lower() or "chair" in target_dir.lower()):
+        data_name = 'Chair'
+    elif("coco" in src_dir.lower() or "coco" in target_dir.lower()):
+        data_name = 'Coco'
     else:
-        print("Wrong dataset_type value")
-        return
+        print("Dataset type auto detect failed. Switching to manual")
+        if dataset_type==0:
+            data_name = "Dobo"
+        elif dataset_type==1:
+            data_name = "Chair"
+        elif dataset_type==2:
+            data_name = "Wesee"
+        elif dataset_type==3:
+            data_name = "Coco"
+        else:
+            print("Wrong dataset type number")
+            return
+    print(f"Selected dataset_type: {data_name}")
+
+    class_init(data_name)
+    if(data_name=='Dobo'):
+        parser_0()
+    elif(data_name=='Chair'):
+        parser_1()
+    elif(data_name=='Wesee'):
+        parser_2()
+    elif(data_name=='Coco'):
+        parser_3()
+
     # Write data.yaml
     yaml_writer()
     if train_val_test[2]==0:

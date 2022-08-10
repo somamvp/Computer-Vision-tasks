@@ -8,15 +8,15 @@ dataset_type = 0
 3 = COCO [Not Working now]
 '''
 
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Dobo_sample'
-target_dir = '../dataset/Dobo_sample_parsed'
+src_dir = '../dataset/Dobo'
+target_dir = '../dataset/Dobo_parsed'
 
 # Ver3 변경사항 :
 # - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
@@ -167,9 +167,9 @@ def parser_0():
                                     t.write(parse)
                                 
                             t.close()
-                    img_box[0]+=1
-                    if(image_process):
-                        image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
+                        img_box[0]+=1
+                        if(image_process):
+                            image_maker(src_dir+'/'+folder, image_name+'.jpg', path[0]+'/images', image_name+'.jpg')
     return
 
 def parser_1():

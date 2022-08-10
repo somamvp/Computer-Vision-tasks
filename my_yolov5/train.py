@@ -596,7 +596,7 @@ def main(opt, callbacks=Callbacks()):
             'shear': (1, 0.0, 10.0),  # image shear (+/- deg)
             'perspective': (0, 0.0, 0.001),  # image perspective (+/- fraction), range 0-0.001
             'flipud': (0, 0.0, 1.0),  # image flip up-down (probability)
-            'fliplr': (1, 0.0, 0.5),  # image flip left-right (probability)
+            'fliplr': (0, 0.0, 0.5),  # image flip left-right (probability)
             'mosaic': (1, 0.0, 1.0),  # image mixup (probability)
             'mixup': (1, 0.0, 1.0),  # image mixup (probability)
             'copy_paste': (1, 0.0, 1.0)}  # segment copy-paste (probability)

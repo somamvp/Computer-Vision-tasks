@@ -13,7 +13,7 @@ imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 tiny_cutoff = 150  # 640 이미지 기준 픽셀수
-large_cutoff = 1000000 # 640 이미지 기준 픽셀수 (1/4)
+large_cutoff = 1000000 # 640 이미지 기준 픽셀수 [Not working]
 force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
@@ -21,7 +21,7 @@ src_dir = '../dataset/Dobo'
 target_dir = '../dataset/Dobo_parsed'
 
 # Ver3 변경사항 :
-# - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류된다
+# - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
 # - Annotation만 생성 시 이미지는 보존됨
 # - class.json으로 정해진 클래스를 강제 적용하도록 함
 #######################################################
@@ -66,12 +66,12 @@ def yaml_writer():
                 f.write(', ')
             else:
                 f.write(']')
-        f.write("\n# Dataset statistics: \n#\tTotal imgs: %d\n#\t\tTrain-Val-Test: [%d,%d,%d]\n"%(img_box[0],
+        f.write("\n# Dataset statistics: \nTotal imgs: %d\nTrain-Val-Test: [%d,%d,%d]\n\n"%(img_box[0],
             train_val_test[0],train_val_test[1],train_val_test[2]))
-        f.write("#\tToo small boxes ignored: %d\n#\tTotal Bbox: %d\n"%(img_box[2], img_box[1]))
-        # f.write("#\tToo large boxes ignored: %d\n"%img_box[3])
+        f.write("Too small boxes ignored: %d\nToo large boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
+        f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(len_):
-            f.write("#\t\t%s: %d\n"%(class_[i],cases[class_[i]]))
+            f.write("    %s: %d\n"%(class_[i],cases[class_[i]]))
         f.close()
 
 def image_maker(img_dir, image_name, store_dir, store_name):

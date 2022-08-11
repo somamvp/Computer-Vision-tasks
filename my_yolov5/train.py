@@ -587,9 +587,9 @@ def main(opt, callbacks=Callbacks()):
             'anchor_t': (1, 2.0, 8.0),  # anchor-multiple threshold
             'anchors': (2, 2.0, 10.0),  # anchors per output grid (0 to ignore)
             'fl_gamma': (0, 0.0, 2.0),  # focal loss gamma (efficientDet default gamma=1.5)
-            'hsv_h': (1, 0.0, 0.1),  # image HSV-Hue augmentation (fraction)
-            'hsv_s': (1, 0.0, 0.6),  # image HSV-Saturation augmentation (fraction)
-            'hsv_v': (1, 0.0, 0.6),  # image HSV-Value augmentation (fraction)
+            'hsv_h': (1, 0.0, 0.03),  # image HSV-Hue augmentation (fraction)
+            'hsv_s': (1, 0.0, 0.9),  # image HSV-Saturation augmentation (fraction)
+            'hsv_v': (1, 0.0, 0.9),  # image HSV-Value augmentation (fraction)
             'degrees': (1, 0.0, 20.0),  # image rotation (+/- deg)
             'translate': (1, 0.0, 0.9),  # image translation (+/- fraction)
             'scale': (1, 0.0, 0.9),  # image scale (+/- gain)

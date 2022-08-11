@@ -18,6 +18,7 @@ cb_dir = '../dataset/'+cb+'_CBon_'+target
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"using devide {DEVICE}")
 
+
 model = AutoShape( 
     DetectMultiBackend(weights='my_yolov5/'+src_pt, device=torch.device(DEVICE))
 )

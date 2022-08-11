@@ -5,7 +5,8 @@ target = 'Dobo_sample_parsed'
 
 
 #######################################
-import yaml, os, shutil, torch
+import yaml, os, shutil
+import torch as torch
 from PIL import Image
 from models.common import DetectMultiBackend, AutoShape
 

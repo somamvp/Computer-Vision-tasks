@@ -1,11 +1,10 @@
 import os
 from PIL import Image, ImageDraw
 
-src_dir = '../dataset/Dobo_sample_parsed/train/'
+src_dir = '../dataset/Chair_parsed/train/'
 # wanted={'9':'scooter'}  #Dobo
 # wanted = {'14':'unusual bench','16':"Chair"}   #Chair set
-wanted = {'0':'Cross','1':'R_Signal','2':'G_Signal','5':'dog','11':'bicycle','15':'kickboard','19':'bench',
-    '26':'bus_stop'}
+wanted = {'8':'bus','10':'motorcycle'}
 
 label_path = src_dir+'labels'
 image_path = src_dir+'images'

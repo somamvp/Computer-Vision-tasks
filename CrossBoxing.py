@@ -7,7 +7,7 @@ target = 'Dobo_sample_parsed'
 #######################################
 import yaml, os, shutil
 from PIL import Image
-# import yolov5, torch
+import torch
 
 src_dir = '../dataset/'+src
 # model = yolov5.load()

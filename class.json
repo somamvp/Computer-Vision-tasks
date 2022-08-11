@@ -73,7 +73,8 @@
 			"bicycle":"bicycle", 
 			"bench":"bench", 
 			"barricade":"barricade"
-		}
+		},
+		"Ignore": ["kickboard"]
 	},
 	
 	"Chair":{
@@ -83,29 +84,30 @@
 		"Opinion":["drainage는 사용하지 말것","unusual bench는 대부분 돌로된 벤치 느낌인데 박스가 안쳐진 비중이 높다",
 			"standing banner안내판", "chair클래스는 좋은데 bbox갯수가 너무 적음"],
 		"Mapping" : {
-			"baricade":"barricade", 
-			"bicycle":"bicycle", 
-			"bench":"bench", 
-			"bollard":"bollard", 
-			"drainage":"none", 
-			"chair":"none", 
-			"car":"car", 
-			"bus":"bus", 
-			"kickboard":"kickboard", 
-			"motorcycle":"motorcycle",
-			"traffic sign":"none", 
-			"manhole":"manhole", 
-			"labacon":"labacon", 
-			"unusual bench":"none", 
-			"tree":"tree", 
-			"pedestrian":"person", 
-			"Leading Block":"Braille_Block", 
-			"Warning Block":"Braille_Block", 
-			"truck":"truck", 
+			"baricade":"barricade",
+			"bicycle":"bicycle",
+			"bench":"bench",
+			"bollard":"bollard",
+			"drainage":"none",
+			"chair":"none",
+			"car":"none",
+			"bus":"none",
+			"kickboard":"kickboard",
+			"motorcycle":"none",
+			"traffic sign":"none",
+			"manhole":"manhole",
+			"labacon":"labacon",
+			"unusual bench":"none",
+			"tree":"tree",
+			"pedestrian":"none",
+			"Leading Block":"Braille_Block",
+			"Warning Block":"Braille_Block",
+			"truck":"none",
 			"standing banner":"none",
-			"pot":"pot", 
-			"wheelchair":"wheelchair"
-		}
+			"pot":"none",
+			"wheelchair":"none"
+		},
+		"Ignore" : ["bollard"]
 	} ,
 
 	"Wesee":{
@@ -115,7 +117,8 @@
 			"Zebra_Cross":"Zebra_Cross", 
 			"R_Signal":"R_Signal", 
 			"G_Signal":"G_Signal"
-		}
+		},
+		"Ignore" : []
 	},
 	"Coco":{
 		"Original" : ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",

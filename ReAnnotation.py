@@ -2,11 +2,11 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Wesee_parsed'
+src_dir = '../dataset/Dobo_sample_parsed'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
-ratio_blankimage = 0.3  # Sustain image without any bounding box randomly (0~1)
+ratio_blankimage = 0.5  # Sustain image without any bounding box randomly (0~1)
 size_threshold = True
 tiny_cutoff = 150
 large_cutoff = 300000
@@ -135,6 +135,9 @@ def data_init(data_name):
     
     if os.path.exists(src_dir+"/data_old.yaml"):
         if os.path.exists(src_dir+"/data.yaml"):
+            ans = input("기존 어노테이션을 지우고 계속합니다. [y,n] : ")
+            if(ans!='y'):
+                exit()    
             os.remove(src_dir+"/data.yaml")
     else:
         os.rename(src_dir+"/data.yaml", src_dir+"/data_old.yaml")
@@ -190,11 +193,6 @@ def main():
             if not os.path.exists(src_dir+folder+'/labels_old'):
                 os.rename(folder_path, src_dir+folder+'/labels_old')
             else:
-                if not assigned:
-                    ans = input("기존 어노테이션을 지우고 계속합니다. [y,n] : ")
-                    if(ans!='y'):
-                        return
-                    assigned = True
                 shutil.rmtree(folder_path)
         os.mkdir(folder_path)
 

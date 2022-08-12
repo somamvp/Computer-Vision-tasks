@@ -7,8 +7,8 @@ jpg_quality = 50  # value: 1~95  (default=75)
 force_classing = True
 
 data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Wesee'
-target_dir = src_dir+'_parsed'
+src_dir = '../dataset/Wesee_sample'
+target_dir = src_dir+'_parsed100'
 
 # Ver3 변경사항 :
 # - 데이터셋 타입이 자동으로 인식됨
@@ -343,9 +343,10 @@ def main():
         os.mkdir(target_dir)
 
     if image_process:
-        ans = input("타겟 폴더 내부 이미지가 전부 지워집니다. 계속 하시겠습니까? [y,n] : ")
-        if(ans!='y'):
-            return
+        if len(os.listdir(target_dir)) > 0:
+            ans = input("타겟 폴더 내부 이미지가 전부 지워집니다. 계속 하시겠습니까? [y,n] : ")
+            if(ans!='y'):
+                return
         shutil.rmtree(target_dir)
         for dir in ['','/train','/val','/test','/train/labels','/val/labels','/test/labels'
                 ,'/train/images','/val/images','/test/images']:

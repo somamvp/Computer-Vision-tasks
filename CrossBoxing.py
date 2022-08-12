@@ -10,9 +10,9 @@ img_size= [640, 360]
 import yaml, os, shutil, json
 from PIL import Image
 import torch
-class_book={}
-final=[]
-ignore=[]
+class_book={}  # 통합클래스이름 : 통합클래스라벨
+final=[]  # 통합클래스이름
+ignore=[]  # src 중 무시할 클래스이름
 
 src_dir = '../dataset/'+src
 # model = yolov5.load()
@@ -77,10 +77,8 @@ def cross_boxing():
                     if(bbox['name'] in ignore):
                        continue 
                     if(bbox['confidence'] > conf):
-                        if_addbox = True
+                        is_addbox = True
                         for gt in provided:
-                            if(not if_addbox):
-                                break
                             predict_box = [bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]]
                             xc = gt[1]*img_size[0]
                             yc = gt[2]*img_size[1]
@@ -88,10 +86,16 @@ def cross_boxing():
                             h = gt[4]*img_size[1]
                             gt_box = [xc-w/2, yc-h/2, xc+w/2, yc+h/2]
                             if(IoU(predict_box, gt_box) > iou):
-                                print(f"Bbox overlapped {final[gt[0]]} on {bbox['name']}")
+                                print(f"Bbox overlapped new: {bbox['name']} on GT: {final[gt[0]]}")
                                 if(bbox['class']==gt[0]):
-                                    pass
-                            else:
+                                    if(bbox['name']!="tree"):
+                                        is_addbox = False
+                                        break
+                        if is_addbox:
+                            if(bbox['name']=="tree"):  # Special case
+
+                            else:  # Normal case
+
 
 
 def data_init():

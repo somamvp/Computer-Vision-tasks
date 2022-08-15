@@ -1,7 +1,7 @@
 #######################################
 # src = 'Wesee_sample_parsed'
 src_pt = 'weseel_RAplus1.pt'
-target = 'Dobo_sample_parsed'
+target = 'weseel_RAplus1-Dobo_sample_parsed'
 
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+cb+'-'+target
@@ -147,6 +147,7 @@ def cross_boxing():
                             if(this_iou > iou_warning):
                                 if(bbox['class']==gt[0]) and (name!="tree"):
                                     is_addbox = False
+                                    print(f"High IoU Bbox overlap ignored : {name} on GT {final[gt[0]]}")
                                     break
                                 draw = ImageDraw.Draw(image)
                                 draw_box(draw, gt_box, final[int(gt[0])],'red')
@@ -155,13 +156,15 @@ def cross_boxing():
                                 ans = input("Confirm new box(yellow)?: [y,n]")
                                 if ans!='y':
                                     is_addbox = False
+                                    print(f"Manually Bbox overlap ignored : {name} on GT {final[gt[0]]}")
+                                    break
 
                             # High IoU
                             elif(this_iou > iou):
                                 if(bbox['class']==gt[0]) and (name!="tree"):
                                     is_addbox = False
+                                    print(f"Bbox overlap ignored : {name} on GT {final[gt[0]]}")
                                     break
-                                # print(f"gt[0] is {int(gt[0])} at file {original_txt}")
                                 print(f"Bbox overlapped new: {name} on GT: {final[gt[0]]}")
                             
 

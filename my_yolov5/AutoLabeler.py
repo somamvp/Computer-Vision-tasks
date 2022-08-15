@@ -155,19 +155,22 @@ def cross_boxing():
                                 ans = input("Confirm new box(yellow)?: [y,n]")
                                 if ans!='y':
                                     is_addbox = False
+                                    break
+                                # print(f"{image_file} Manual overlapped new: {name} on GT: {final[gt[0]]}")
 
                             # High IoU
                             elif(this_iou > iou):
                                 if(bbox['class']==gt[0]) and (name!="tree"):
                                     is_addbox = False
                                     break
-                                # print(f"gt[0] is {int(gt[0])} at file {original_txt}")
-                                print(f"Bbox overlapped new: {name} on GT: {final[gt[0]]}")
+                                # print(f"{image_file} Bbox overlapped new: {name} on GT: {final[gt[0]]}")
                             
 
                         if is_addbox:
+                            print(f"{image_file} AutoLabeling new: {name} on GT: {final[gt[0]]}")
                             if(name=="tree"):  # Special case
                                 print("WARNING :: Tree conflict case is not deployed yet...")
+                                exit()
                             else:  # Normal case
                                 # print(f"Normally adding new box: {name}")
                                 xc = (bbox["xmax"]+bbox["xmin"])/2/img_size[0]

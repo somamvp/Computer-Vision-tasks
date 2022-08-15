@@ -1,12 +1,41 @@
 #######################################
-src = 'Wesee_sample_parsed'
+# src = 'Wesee_sample_parsed'
 src_pt = 'weseel_RAplus1.pt'
 target = 'Dobo_sample_parsed'
 
-cb = src_pt[:src_pt.find("_")]
-cb_dir = '../../dataset/'+cb+'_'+target
+cb = src_pt[:src_pt.find(".")]
+cb_dir = '../../dataset/'+cb+'-'+target
 
-conf = 0.8 #보다 높아야 유효
+conf_def = 0.7 #보다 높아야 유효
+conf = {  # conf 개별 설정
+    "Zebra_Cross":0.8,
+    "R_Signal":0.6,
+    "G_Signal":0.6,
+    # "Braille_Block":0.7,
+    # "person":,
+    # "dog":,
+    # "tree":,
+    # "car":,
+    # "bus":,
+    # "truck":,
+    # "motorcycle":,
+    # "bicycle":,
+    # "train":,
+    # "wheelchair":,
+    # "stroller":,
+    # "kickboard":,
+    # "bollard":,
+    # "manhole":,
+    # "labacon":,
+    # "bench":,
+    # "barricade":,
+    # "pot":,
+    # "table":,
+    # "chair":,
+    # "fire_hydrant":,
+    # "movable_signage":,
+    # "bus_stop":
+}
 iou = 0.2 #보다 높고 클래스가 같으면 무시
 iou_warning = 0.4 #보다 높으면 사용자 직접확인
 
@@ -23,7 +52,7 @@ ignore=[]  # src 중 무시할 클래스이름
 img_box=[0,0,0,0] # Number of total [images, bboxes, tiny, large]
 added={}
 
-src_dir = '../../dataset/'+src
+# src_dir = '../../dataset/'+src
 target_dir = '../../dataset/'+target
 font = ImageFont.truetype("utils/arial_bold.ttf", 15)
 
@@ -75,7 +104,7 @@ def cross_boxing():
             for image_file in image_list:
                 image = Image.open(image_folder+image_file)
 
-                # YOLOv5 large model!!!
+                # YOLOv5 model
                 result = model(image, size=640).pandas().xyxy[0].to_dict(orient="records")
 
                 # print(result)
@@ -100,9 +129,10 @@ def cross_boxing():
                 
                 for bbox in result:
                     is_addbox=False
-                    if(bbox['name'] in ignore):
+                    name = bbox['name']
+                    if(name in ignore):
                        continue 
-                    if(bbox['confidence'] > conf):
+                    if(name in conf.keys() and bbox['confidence'] > conf[name]) or (name not in conf.keys() and bbox['confidence'] > conf_def):
                         is_addbox = True
                         for gt in gts:
                             predict_box = [bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]]
@@ -115,12 +145,12 @@ def cross_boxing():
 
                             # Manual Labeling
                             if(this_iou > iou_warning):
-                                if(bbox['class']==gt[0]) and (bbox['name']!="tree"):
+                                if(bbox['class']==gt[0]) and (name!="tree"):
                                     is_addbox = False
                                     break
                                 draw = ImageDraw.Draw(image)
                                 draw_box(draw, gt_box, final[int(gt[0])],'red')
-                                draw_box(draw, predict_box, bbox['name'],'yellow')
+                                draw_box(draw, predict_box, name,'yellow')
                                 image.show()
                                 ans = input("Confirm new box(yellow)?: [y,n]")
                                 if ans!='y':
@@ -128,32 +158,32 @@ def cross_boxing():
 
                             # High IoU
                             elif(this_iou > iou):
-                                if(bbox['class']==gt[0]) and (bbox['name']!="tree"):
+                                if(bbox['class']==gt[0]) and (name!="tree"):
                                     is_addbox = False
                                     break
                                 # print(f"gt[0] is {int(gt[0])} at file {original_txt}")
-                                print(f"Bbox overlapped new: {bbox['name']} on GT: {final[gt[0]]}")
+                                print(f"Bbox overlapped new: {name} on GT: {final[gt[0]]}")
                             
 
                         if is_addbox:
-                            if(bbox['name']=="tree"):  # Special case
+                            if(name=="tree"):  # Special case
                                 print("WARNING :: Tree conflict case is not deployed yet...")
                             else:  # Normal case
-                                # print(f"Normally adding new box: {bbox['name']}")
+                                # print(f"Normally adding new box: {name}")
                                 xc = (bbox["xmax"]+bbox["xmin"])/2/img_size[0]
                                 yc = (bbox["ymax"]+bbox["ymin"])/2/img_size[1]
                                 w = (bbox["xmax"]-bbox["xmin"])/img_size[0]
                                 h = (bbox["ymax"]-bbox["ymin"])/img_size[1]
                                 new_box=[bbox['class'], xc, yc, w, h]
                                 gts.append(new_box)
-                                if cases[bbox['name']]=='Invalid':
-                                    cases[bbox['name']]=1
+                                if cases[name]=='Invalid':
+                                    cases[name]=1
                                 else:
-                                    cases[bbox['name']]+=1
-                                if not bbox['name'] in added.keys():
-                                    added[bbox['name']]=1
+                                    cases[name]+=1
+                                if not name in added.keys():
+                                    added[name]=1
                                 else:
-                                    added[bbox['name']]+=1
+                                    added[name]+=1
                                 img_box[1]+=1
                                     
                 with open(cb_dir+type+'/labels/'+image_file[:image_file.find(".")]+'.txt','w') as t:
@@ -191,7 +221,7 @@ def autolabel_yaml_writer():
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(nc):
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
-        f.write("\nAuto labels:  # 라벨링 된 순서와 상관없음\n")
+        f.write("\nAuto labels:  # 순서는 라벨링 된 순서와 상관없음\n")
         for pt in add_info.keys():
             f.write(f"    {pt}: {added}\n")
         f.close()
@@ -200,13 +230,13 @@ def data_init():
     global final, ignore, origin_data_stat, cases, img_box, add_info
     add_info={}
 
-    if("wesee" in src.lower()):
+    if("wesee" in src_pt.lower()):
         data_name = 'Wesee'
-    elif("dobo" in src.lower()):
+    elif("dobo" in src_pt.lower()):
         data_name = 'Dobo'
-    elif("chair" in src.lower()):
+    elif("chair" in src_pt.lower()):
         data_name = 'Chair'
-    elif("coco" in src.lower()):
+    elif("coco" in src_pt.lower()):
         data_name = 'Coco'
     else:
         print("Dataset type auto detect failed. Exiting...")

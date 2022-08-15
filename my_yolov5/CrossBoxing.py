@@ -1,6 +1,6 @@
 #######################################
 src = 'Wesee_sample_parsed'
-src_pt = 'weseel_RA3.pt'
+src_pt = 'weseel_RAplus1.pt'
 target = 'Dobo_sample_parsed'
 
 cb = src_pt[:src_pt.find("_")]

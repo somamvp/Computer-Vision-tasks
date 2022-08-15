@@ -1,10 +1,10 @@
 #######################################
-src = 'Wesee_sample_parsed'
+# src = 'Wesee_sample_parsed'
 src_pt = 'weseel_RA3.pt'
 target = 'Dobo_sample_parsed'
 
-cb = src_pt[:src_pt.find("_")]
-cb_dir = '../../dataset/'+cb+'_'+target
+cb = src_pt[:src_pt.find(".")]
+cb_dir = '../../dataset/'+cb+'-'+target
 
 conf = 0.8 #보다 높아야 유효
 iou = 0.2 #보다 높고 클래스가 같으면 무시
@@ -23,7 +23,7 @@ ignore=[]  # src 중 무시할 클래스이름
 img_box=[0,0,0,0] # Number of total [images, bboxes, tiny, large]
 added={}
 
-src_dir = '../../dataset/'+src
+# src_dir = '../../dataset/'+src
 target_dir = '../../dataset/'+target
 font = ImageFont.truetype("utils/arial_bold.ttf", 15)
 
@@ -75,7 +75,7 @@ def cross_boxing():
             for image_file in image_list:
                 image = Image.open(image_folder+image_file)
 
-                # YOLOv5 large model!!!
+                # YOLOv5 model
                 result = model(image, size=640).pandas().xyxy[0].to_dict(orient="records")
 
                 # print(result)
@@ -191,7 +191,7 @@ def autolabel_yaml_writer():
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(nc):
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
-        f.write("\nAuto labels:  # 라벨링 된 순서와 상관없음\n")
+        f.write("\nAuto labels:  # 순서는 라벨링 된 순서와 상관없음\n")
         for pt in add_info.keys():
             f.write(f"    {pt}: {added}\n")
         f.close()
@@ -200,13 +200,13 @@ def data_init():
     global final, ignore, origin_data_stat, cases, img_box, add_info
     add_info={}
 
-    if("wesee" in src.lower()):
+    if("wesee" in src_pt.lower()):
         data_name = 'Wesee'
-    elif("dobo" in src.lower()):
+    elif("dobo" in src_pt.lower()):
         data_name = 'Dobo'
-    elif("chair" in src.lower()):
+    elif("chair" in src_pt.lower()):
         data_name = 'Chair'
-    elif("coco" in src.lower()):
+    elif("coco" in src_pt.lower()):
         data_name = 'Coco'
     else:
         print("Dataset type auto detect failed. Exiting...")

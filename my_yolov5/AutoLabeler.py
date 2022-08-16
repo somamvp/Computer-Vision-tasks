@@ -1,7 +1,7 @@
 #######################################
 # src = 'Wesee_sample_parsed'
-src_pt = 'weseel_RAplus1.pt'
-target = 'Dobo_sample_parsed'
+src_pt = 'weseel_RAplus2.pt'
+target = 'Wesee_parsed'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+cb+'-'+target
 
@@ -10,8 +10,8 @@ iou_warning = 0.4 #보다 높으면 사용자 직접확인
 conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}
     "default":0.6,
     "Zebra_Cross":0.8,
-    "R_Signal":[0.3,0.5],
-    "G_Signal":[0.3,0.5],
+    "R_Signal":[0.32,0.35],
+    "G_Signal":[0.31,0.37],
     # "Braille_Block":0.7,
     # "person":,
     # "dog":,
@@ -138,7 +138,7 @@ def auto_labeling():
                 # {"xmin":0.0,"ymin":550.5960083008,"xmax":76.6811904907,"ymax":878.669921875,"confidence":0.4505961835,"class":0.0,"name":"person"}]
 
                 gts = []
-                original_txt = open(label_folder+image_file[:image_file.find("jpg")]+"txt", 'r')
+                original_txt = open(label_folder+image_file[:image_file.find(".")]+".txt", 'r')
                 originals = original_txt.readlines()
                 for line in originals:
                     tok = list(map(float,line.split()))
@@ -185,7 +185,7 @@ def auto_labeling():
                             draw_box(draw, predict_box, name,'blue')
                             image.show()
                             ans = input(f"{image_file}: Confirm low-conf box(blue) {name}?: [y,n] > ")
-                            print(f"{ans}  ",end='')
+                            print(f"{ans} \n\t\t\t\t\t",end='')
                             add_confirm(name, ans, confidence)
                             if ans!='y':
                                 is_addbox = False
@@ -196,25 +196,25 @@ def auto_labeling():
                         if(this_iou > iou_warning):
                             if(bbox['class']==gt[0]) and (name!="tree"):
                                 is_addbox = False
-                                print(f"{image_file} High IoU Bbox overlap ignored: {name}\tconf={confidence}")
+                                print(f"({num}/{total_num}) %-32s High IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
                             draw = ImageDraw.Draw(image)
                             draw_box(draw, gt_box, final[int(gt[0])],'red')
                             draw_box(draw, predict_box, name,'blue')
                             image.show()
                             ans = input(f"{image_file}: Confirm overlap box(blue) {name}?: [y,n] > ")
-                            print(f"{ans}  ",end='')
+                            print(f"{ans} \n\t\t\t\t\t",end='')
                             add_confirm(name, ans, confidence)
                             if ans!='y':    
                                 is_addbox = False
-                                print(f"Manually Bbox overlap ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
+                                print(f"Bbox overlap Manually ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
                             break
 
                         # Midium IoU
                         elif(this_iou > iou):
                             if(bbox['class']==gt[0]) and (name!="tree"):
                                 is_addbox = False
-                                print(f"{image_file} Medium IoU Bbox overlap ignored: {name}\tconf={confidence}")
+                                print(f"({num}/{total_num}) %-32s Medium IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
                             
 
@@ -278,7 +278,7 @@ def autolabel_yaml_writer():
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
         f.write("\nAuto labels:  # 순서는 라벨링 된 순서와 상관없음\n")
         for pt in add_info.keys():
-            f.write(f"\t{pt}:\n\t\tBbox_added: {added}\n\t\tconf_threshold: {conf}\n\t\tmanual_confirms: {confirms}")
+            f.write(f"    {pt}:\n        Bbox_added: {added}\n        conf_threshold: {conf}\n        manual_confirms: {confirms}")
         f.close()
 
 def data_init():

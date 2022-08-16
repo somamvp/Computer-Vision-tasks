@@ -1,0 +1,49 @@
+path: ../../dataset/Wesee_AL1
+train: train/images
+val: val/images
+test: test/images
+
+nc: 27
+names: [Zebra_Cross, R_Signal, G_Signal, Braille_Block, person, dog, tree, car, bus, truck, motorcycle, bicycle, train, wheelchair, stroller, kickboard, bollard, manhole, labacon, bench, barricade, pot, table, chair, fire_hydrant, movable_signage, bus_stop]
+# Dataset statistics: 
+Total imgs: 36606
+Train-Val-Test: [29260,3611,3598]
+
+Too small boxes ignored: 3530
+Too large boxes ignored: 0
+
+Total Bbox: 51091
+Bbox distribution:
+    Zebra_Cross: 37074
+    R_Signal: 10176
+    G_Signal: 3841
+    Braille_Block: Invalid
+    person: Invalid
+    dog: Invalid
+    tree: Invalid
+    car: Invalid
+    bus: Invalid
+    truck: Invalid
+    motorcycle: Invalid
+    bicycle: Invalid
+    train: Invalid
+    wheelchair: Invalid
+    stroller: Invalid
+    kickboard: Invalid
+    bollard: Invalid
+    manhole: Invalid
+    labacon: Invalid
+    bench: Invalid
+    barricade: Invalid
+    pot: Invalid
+    table: Invalid
+    chair: Invalid
+    fire_hydrant: Invalid
+    movable_signage: Invalid
+    bus_stop: Invalid
+
+Auto labels:  # 순서는 라벨링 된 순서와 상관없음
+    weseel_RAplus2.pt:
+        Bbox_added: {'G_Signal': 898, 'R_Signal': 2344, 'Zebra_Cross': 353}
+        conf_threshold: {'default': 0.6, 'Zebra_Cross': 0.8, 'R_Signal': [0.35, 0.35], 'G_Signal': [0.3, 0.38]}
+        manual_confirms: {'G_Signal': [0.8663655519485474, 0.30018818378448486], 'R_Signal': [0.8585962057113647, 0.7333371043205261], 'Zebra_Cross': [0.9798905253410339, 0.9406313896179199]}

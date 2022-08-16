@@ -44,13 +44,14 @@ import yaml, os, shutil, json
 from PIL import Image, ImageDraw, ImageFont
 import torch
 from models.common import AutoShape, DetectMultiBackend
-global final, ignore
+global final, ignore, add_info
 confirms={} # 통합클래스이름: [가장높은 불합격conf, 가장낮은 합격conf]
 final=[]  # 통합클래스이름
 class_book={}
 ignore=[]  # src 중 무시할 클래스이름
 img_box=[0,0,0,0] # Number of total [images, bboxes, tiny, large]
 added={}
+add_inifo=[]
 
 # src_dir = '../../dataset/'+src
 target_dir = '../../dataset/'+target
@@ -96,12 +97,12 @@ def draw_box(feature, coor, text, color):
 def add_confirm(name, ans, conf):
     if(name not in confirms.keys()):
         confirms[name] = ['NA','NA']
-    if(ans=='y'):
+    if(ans=='y' or ans=='replace'):
         if(confirms[name][1]=='NA'):
             confirms[name][1]=conf
         elif(confirms[name][1]>conf):
             confirms[name][1]=conf
-    else:
+    elif(ans=='n'):
         if(confirms[name][0]=='NA'):
             confirms[name][0]=conf
         elif(confirms[name][0]<conf):
@@ -182,14 +183,21 @@ def auto_labeling():
                         # Low-conf Quick Manual Labeling
                         if(confidence < auto_level):
                             draw = ImageDraw.Draw(image)
-                            draw_box(draw, predict_box, name,'blue')
+                            draw_box(draw, predict_box, name,'green')
                             image.show()
-                            ans = input(f"{image_file}: Confirm low-conf box(blue) {name}?: [y,n] > ")
-                            print(f"{ans} \n\t\t\t\t\t",end='')
+                            while(True):
+                                ans = input(f"{image_file}: Confirm low-conf: {confidence} box(green) {name}?: [y,n] > ")
+                                print(f"{ans} \n\t\t\t\t\t",end='')
+                                
+                                if ans=='n':
+                                    is_addbox = False
+                                    print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
+                                    break
+                                elif ans=='y':
+                                    break
+                                else:
+                                    print("Wrong answer, do it again")
                             add_confirm(name, ans, confidence)
-                            if ans!='y':
-                                is_addbox = False
-                                print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
                             break 
 
                         # High IoU Manual Labeling
@@ -202,12 +210,26 @@ def auto_labeling():
                             draw_box(draw, gt_box, final[int(gt[0])],'red')
                             draw_box(draw, predict_box, name,'blue')
                             image.show()
-                            ans = input(f"{image_file}: Confirm overlap box(blue) {name}?: [y,n] > ")
-                            print(f"{ans} \n\t\t\t\t\t",end='')
+                            while(True):
+                                ans = input(f"{image_file}: Confirm overlap box(blue) {name} over GT {final[gt[0]]}?: [y,n,replace,purge] > ")
+                                print(f"{ans} \n\t\t\t\t\t",end='')
+                                if ans=='y':
+                                    break
+                                elif ans=='n':    
+                                    is_addbox = False
+                                    print(f"Bbox overlap Manually ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
+                                    break
+                                elif ans=='replace':
+                                    del gts[gt]
+                                    print(f"Bbox overlap Manually replaced to: {name} \tfrom: {final[gt[0]]}\tconf={confidence}")
+                                    break
+                                elif ans=='purge':
+                                    del gts[gt]
+                                    is_addbox = False
+                                    print(f"Bbox overlap Manually purged both: {name} \tand GT: {final[gt[0]]}\tconf={confidence}")
+                                    break
+
                             add_confirm(name, ans, confidence)
-                            if ans!='y':    
-                                is_addbox = False
-                                print(f"Bbox overlap Manually ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
                             break
 
                         # Midium IoU
@@ -254,7 +276,7 @@ def auto_labeling():
 #          yaml.dump(content, y)
 
 def autolabel_yaml_writer():
-    global origin_data_stat, img_box
+    global origin_data_stat, img_box, add_info
     o = origin_data_stat
     train_val_test = o['Train-Val-Test']
     add_info[src_pt] = added
@@ -276,14 +298,14 @@ def autolabel_yaml_writer():
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(nc):
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
-        f.write("\nAuto labels:  # 순서는 라벨링 된 순서와 상관없음\n")
-        for pt in add_info.keys():
-            f.write(f"    {pt}:\n        Bbox_added: {added}\n        conf_threshold: {conf}\n        manual_confirms: {confirms}")
+        f.write("\nAuto labels:  # 라벨링 된 순서로 정렬됨\n")
+        for autolabel in add_info:
+            f.write(f"  - weight : {autolabel['weight']}:\n    Bbox_added: {autolabel['Bbox_added']}\n")
+            f.write(f"    conf_threshold: {autolabel['conf_threshold']}\n    manual_confirms: {autolabel['manual_confirms']}")
         f.close()
 
 def data_init():
     global final, ignore, origin_data_stat, cases, img_box, add_info
-    add_info={}
 
     if("wesee" in src_pt.lower()):
         data_name = 'Wesee'

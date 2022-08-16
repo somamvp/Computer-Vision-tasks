@@ -1,16 +1,17 @@
 #######################################
 # src = 'Wesee_sample_parsed'
 src_pt = 'weseel_RAplus1.pt'
-target = 'weseel_RAplus1-Dobo_sample_parsed'
-
+target = 'Dobo_sample_parsed'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+cb+'-'+target
 
-conf_def = 0.7 #보다 높아야 유효
-conf = {  # conf 개별 설정
+iou = 0.3 #보다 높고 클래스가 같으면 무시
+iou_warning = 0.4 #보다 높으면 사용자 직접확인
+conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}
+    "default":0.6,
     "Zebra_Cross":0.8,
-    "R_Signal":0.6,
-    "G_Signal":0.6,
+    "R_Signal":[0.3,0.5],
+    "G_Signal":[0.3,0.5],
     # "Braille_Block":0.7,
     # "person":,
     # "dog":,
@@ -36,8 +37,6 @@ conf = {  # conf 개별 설정
     # "movable_signage":,
     # "bus_stop":
 }
-iou = 0.2 #보다 높고 클래스가 같으면 무시
-iou_warning = 0.4 #보다 높으면 사용자 직접확인
 
 img_size= [640, 360]
 #######################################
@@ -45,7 +44,8 @@ import yaml, os, shutil, json
 from PIL import Image, ImageDraw, ImageFont
 import torch
 from models.common import AutoShape, DetectMultiBackend
-global final, ignore, added
+global final, ignore
+confirms={} # 통합클래스이름: [가장높은 불합격conf, 가장낮은 합격conf]
 final=[]  # 통합클래스이름
 class_book={}
 ignore=[]  # src 중 무시할 클래스이름
@@ -93,15 +93,37 @@ def draw_box(feature, coor, text, color):
     feature.rectangle((coor[0], coor[1]-text_shift, coor[0] + bbox[2], coor[1]), fill=color)
     feature.text((coor[0],coor[1]-text_shift), text, (255,255,255), font=font)
 
-def cross_boxing():
-    global final, ignore, img_box, cases
+def add_confirm(name, ans, conf):
+    if(name not in confirms.keys()):
+        confirms[name] = ['NA','NA']
+    if(ans=='y'):
+        if(confirms[name][1]=='NA'):
+            confirms[name][1]=conf
+        elif(confirms[name][1]>conf):
+            confirms[name][1]=conf
+    else:
+        if(confirms[name][0]=='NA'):
+            confirms[name][0]=conf
+        elif(confirms[name][0]<conf):
+            confirms[name][0]=conf
 
-    for type in ['/train','/val','/test']:
-        image_folder = target_dir+type+'/images/'
-        label_folder = target_dir+type+'/labels/'
+def auto_labeling():
+    global final, ignore, img_box, cases
+    total_num=0
+    num=0
+    for type_ in ['/train','/val','/test']:
+        image_folder = target_dir+type_+'/images/'
+        if os.path.exists(image_folder):
+            total_num += len(os.listdir(image_folder))
+
+
+    for type_ in ['/train','/val','/test']:
+        image_folder = target_dir+type_+'/images/'
+        label_folder = target_dir+type_+'/labels/'
         if os.path.exists(image_folder):
             image_list = os.listdir(image_folder)
             for image_file in image_list:
+                num+=1
                 image = Image.open(image_folder+image_file)
 
                 # YOLOv5 model
@@ -128,68 +150,98 @@ def cross_boxing():
                 # [23, 0.39765364583333335, 0.43243518518518514, 0.07333854166666663, 0.07290740740740737]]
                 
                 for bbox in result:
-                    is_addbox=False
+                    is_addbox=True
                     name = bbox['name']
-                    if(name in ignore):
+                    confidence = bbox['confidence']
+                    auto_level = conf['default']
+                    if(name in ignore) or (name not in conf.keys() and confidence < conf['default']):
                        continue 
-                    if(name in conf.keys() and bbox['confidence'] > conf[name]) or (name not in conf.keys() and bbox['confidence'] > conf_def):
-                        is_addbox = True
-                        for gt in gts:
-                            predict_box = [bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]]
-                            xc = gt[1]*img_size[0]
-                            yc = gt[2]*img_size[1]
-                            w = gt[3]*img_size[0]
-                            h = gt[4]*img_size[1]
-                            gt_box = [xc-w/2, yc-h/2, xc+w/2, yc+h/2]
-                            this_iou = IoU(predict_box, gt_box)
+                    if(name in conf.keys()):
+                        if(type(conf[name]) != type([])):
+                            auto_level = conf[name]
+                            if(confidence < conf[name]):
+                                continue
+                        elif(len(conf[name])==2):
+                            auto_level = conf[name][1]
+                            if(confidence < conf[name][0]):
+                                continue
+                        else:
+                            print("Argument 'conf' Incorrect error. Exiting...")
+                            exit()
 
-                            # Manual Labeling
-                            if(this_iou > iou_warning):
-                                if(bbox['class']==gt[0]) and (name!="tree"):
-                                    is_addbox = False
-                                    print(f"High IoU Bbox overlap ignored : {name} on GT {final[gt[0]]}")
-                                    break
-                                draw = ImageDraw.Draw(image)
-                                draw_box(draw, gt_box, final[int(gt[0])],'red')
-                                draw_box(draw, predict_box, name,'yellow')
-                                image.show()
-                                ans = input("Confirm new box(yellow)?: [y,n]")
-                                if ans!='y':
-                                    is_addbox = False
-                                    print(f"Manually Bbox overlap ignored : {name} on GT {final[gt[0]]}")
-                                    break
 
-                            # High IoU
-                            elif(this_iou > iou):
-                                if(bbox['class']==gt[0]) and (name!="tree"):
-                                    is_addbox = False
-                                    print(f"Bbox overlap ignored : {name} on GT {final[gt[0]]}")
-                                    break
-                                print(f"Bbox overlapped new: {name} on GT: {final[gt[0]]}")
+                    for gt in gts:
+                        predict_box = [bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]]
+                        xc = gt[1]*img_size[0]
+                        yc = gt[2]*img_size[1]
+                        w = gt[3]*img_size[0]
+                        h = gt[4]*img_size[1]
+                        gt_box = [xc-w/2, yc-h/2, xc+w/2, yc+h/2]
+                        this_iou = IoU(predict_box, gt_box)
+
+                        # Low-conf Quick Manual Labeling
+                        if(confidence < auto_level):
+                            draw = ImageDraw.Draw(image)
+                            draw_box(draw, predict_box, name,'blue')
+                            image.show()
+                            ans = input(f"{image_file}: Confirm low-conf box(blue) {name}?: [y,n] > ")
+                            print(f"{ans}  ",end='')
+                            add_confirm(name, ans, confidence)
+                            if ans!='y':
+                                is_addbox = False
+                                print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
+                            break 
+
+                        # High IoU Manual Labeling
+                        if(this_iou > iou_warning):
+                            if(bbox['class']==gt[0]) and (name!="tree"):
+                                is_addbox = False
+                                print(f"{image_file} High IoU Bbox overlap ignored: {name}\tconf={confidence}")
+                                break
+                            draw = ImageDraw.Draw(image)
+                            draw_box(draw, gt_box, final[int(gt[0])],'red')
+                            draw_box(draw, predict_box, name,'blue')
+                            image.show()
+                            ans = input(f"{image_file}: Confirm overlap box(blue) {name}?: [y,n] > ")
+                            print(f"{ans}  ",end='')
+                            add_confirm(name, ans, confidence)
+                            if ans!='y':    
+                                is_addbox = False
+                                print(f"Manually Bbox overlap ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
+                            break
+
+                        # Midium IoU
+                        elif(this_iou > iou):
+                            if(bbox['class']==gt[0]) and (name!="tree"):
+                                is_addbox = False
+                                print(f"{image_file} Medium IoU Bbox overlap ignored: {name}\tconf={confidence}")
+                                break
                             
 
-                        if is_addbox:
-                            if(name=="tree"):  # Special case
-                                print("WARNING :: Tree conflict case is not deployed yet...")
-                            else:  # Normal case
-                                # print(f"Normally adding new box: {name}")
-                                xc = (bbox["xmax"]+bbox["xmin"])/2/img_size[0]
-                                yc = (bbox["ymax"]+bbox["ymin"])/2/img_size[1]
-                                w = (bbox["xmax"]-bbox["xmin"])/img_size[0]
-                                h = (bbox["ymax"]-bbox["ymin"])/img_size[1]
-                                new_box=[bbox['class'], xc, yc, w, h]
-                                gts.append(new_box)
-                                if cases[name]=='Invalid':
-                                    cases[name]=1
-                                else:
-                                    cases[name]+=1
-                                if not name in added.keys():
-                                    added[name]=1
-                                else:
-                                    added[name]+=1
-                                img_box[1]+=1
+                    if is_addbox:
+                        print(f"({num}/{total_num}) %-32s AutoLabeling new:\t{name}\tconf={confidence}"%image_file)
+                        if(name=="tree"):  # Special case
+                            print("WARNING :: Tree conflict case is not deployed yet...")
+                            exit()
+                        else:  # Normal case
+                            # print(f"Normally adding new box: {name}")
+                            xc = (bbox["xmax"]+bbox["xmin"])/2/img_size[0]
+                            yc = (bbox["ymax"]+bbox["ymin"])/2/img_size[1]
+                            w = (bbox["xmax"]-bbox["xmin"])/img_size[0]
+                            h = (bbox["ymax"]-bbox["ymin"])/img_size[1]
+                            new_box=[bbox['class'], xc, yc, w, h]
+                            gts.append(new_box)
+                            if cases[name]=='Invalid':
+                                cases[name]=1
+                            else:
+                                cases[name]+=1
+                            if not name in added.keys():
+                                added[name]=1
+                            else:
+                                added[name]+=1
+                            img_box[1]+=1
                                     
-                with open(cb_dir+type+'/labels/'+image_file[:image_file.find(".")]+'.txt','w') as t:
+                with open(cb_dir+type_+'/labels/'+image_file[:image_file.find(".")]+'.txt','w') as t:
                     for nodes in gts:
                         for node in nodes:
                             t.write(str(node)+' ')
@@ -226,7 +278,7 @@ def autolabel_yaml_writer():
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
         f.write("\nAuto labels:  # 순서는 라벨링 된 순서와 상관없음\n")
         for pt in add_info.keys():
-            f.write(f"    {pt}: {added}\n")
+            f.write(f"\t{pt}:\n\t\tBbox_added: {added}\n\t\tconf_threshold: {conf}\n\t\tmanual_confirms: {confirms}")
         f.close()
 
 def data_init():
@@ -272,6 +324,7 @@ def main():
         if os.path.exists(cb_dir+dir):
             if not assigned:
                 ans = input("기존 오토라벨을 지우고 계속합니다. [y,n] : ")
+                print(ans)
                 if(ans!='y'):
                     exit() 
                 else:
@@ -279,11 +332,18 @@ def main():
             shutil.rmtree(cb_dir+dir)
         if os.path.exists(target_dir+dir):
             os.mkdir(cb_dir+dir)
+
+    print(f"Your confidence settings: {conf}\n")
     data_init()
-    cross_boxing()
+    auto_labeling()
     # yaml_dumper()
     autolabel_yaml_writer()
-    print(f"Following bboxes are added: {added}")
+    if(not os.path.exists(cb_dir+'/test/images')):
+        shutil.rmtree(cb_dir+'/test')
+
+    print(f"\n\nFollowing bboxes are added: {added}")
+    print(f"Manual confirm INFO:  # Higest Reject, Lowest Confirm\n\t{confirms}")
+    
 
 
 if __name__ == "__main__":

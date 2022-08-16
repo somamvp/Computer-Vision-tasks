@@ -1,12 +1,12 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/weseel_RAplus1-Dobo_sample_parsed/train/'
+src_dir = '../dataset/weseel_RAplus1-Chair_parsed/val/'
 show_others = True
 # wanted={'9':'scooter'}  #Dobo
 # wanted = {'14':'unusual bench','16':"Chair"}   #Chair set
 # wanted = {'8':'bus','10':'motorcycle'}
-wanted = {'0':"Zebra_Cross",
+wanted = { #'0':"Zebra_Cross",
 '1':"R_Signal",
 '2':"G_Signal",
 # '3':"Braille_Block",

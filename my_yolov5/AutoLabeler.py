@@ -179,6 +179,7 @@ def auto_labeling():
                         h = gt[4]*img_size[1]
                         gt_box = [xc-w/2, yc-h/2, xc+w/2, yc+h/2]
                         this_iou = IoU(predict_box, gt_box)
+                        print(this_iou)
 
                         # High IoU Manual Labeling
                         if(this_iou > iou_warning):

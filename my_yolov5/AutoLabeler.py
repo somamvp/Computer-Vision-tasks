@@ -1,7 +1,7 @@
 #######################################
 # src = 'Wesee_sample_parsed'
 src_pt = 'weseel_RAplus2.pt'
-target = 'Wesee_parsed'
+target = 'weseel_RAplus2-weseel_RAplus2-Dobo_sample_parsed'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+cb+'-'+target
 
@@ -50,8 +50,8 @@ final=[]  # 통합클래스이름
 class_book={}
 ignore=[]  # src 중 무시할 클래스이름
 img_box=[0,0,0,0] # Number of total [images, bboxes, tiny, large]
-added={}
-add_inifo=[]
+added={} # 클래스이름:추가된 박스 갯수
+add_info=[]
 
 # src_dir = '../../dataset/'+src
 target_dir = '../../dataset/'+target
@@ -153,7 +153,7 @@ def auto_labeling():
                 for bbox in result:
                     is_addbox=True
                     name = bbox['name']
-                    confidence = bbox['confidence']
+                    confidence = round(bbox['confidence'], 5)
                     auto_level = conf['default']
                     if(name in ignore) or (name not in conf.keys() and confidence < conf['default']):
                        continue 
@@ -179,26 +179,6 @@ def auto_labeling():
                         h = gt[4]*img_size[1]
                         gt_box = [xc-w/2, yc-h/2, xc+w/2, yc+h/2]
                         this_iou = IoU(predict_box, gt_box)
-
-                        # Low-conf Quick Manual Labeling
-                        if(confidence < auto_level):
-                            draw = ImageDraw.Draw(image)
-                            draw_box(draw, predict_box, name,'green')
-                            image.show()
-                            while(True):
-                                ans = input(f"{image_file}: Confirm low-conf: {confidence} box(green) {name}?: [y,n] > ")
-                                print(f"{ans} \n\t\t\t\t\t",end='')
-                                
-                                if ans=='n':
-                                    is_addbox = False
-                                    print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
-                                    break
-                                elif ans=='y':
-                                    break
-                                else:
-                                    print("Wrong answer, do it again")
-                            add_confirm(name, ans, confidence)
-                            break 
 
                         # High IoU Manual Labeling
                         if(this_iou > iou_warning):
@@ -238,6 +218,26 @@ def auto_labeling():
                                 is_addbox = False
                                 print(f"({num}/{total_num}) %-32s Medium IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
+
+                        # Low-conf Quick Manual Labeling
+                        if(confidence < auto_level):
+                            draw = ImageDraw.Draw(image)
+                            draw_box(draw, predict_box, name,'green')
+                            image.show()
+                            while(True):
+                                ans = input(f"{image_file}: Confirm low-conf: {confidence} box(green) {name}?: [y,n] > ")
+                                print(f"{ans} \n\t\t\t\t\t",end='')
+                                
+                                if ans=='n':
+                                    is_addbox = False
+                                    print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
+                                    break
+                                elif ans=='y':
+                                    break
+                                else:
+                                    print("Wrong answer, do it again")
+                            add_confirm(name, ans, confidence)
+                            break 
                             
 
                     if is_addbox:
@@ -279,7 +279,12 @@ def autolabel_yaml_writer():
     global origin_data_stat, img_box, add_info
     o = origin_data_stat
     train_val_test = o['Train-Val-Test']
-    add_info[src_pt] = added
+    new_add_info={}
+    new_add_info['weight']=src_pt
+    new_add_info['Bbox_added']=added
+    new_add_info['conf_threshold']=conf
+    new_add_info['manual_confirms']=confirms
+    add_info.append(new_add_info)
 
     nc = len(final)
     with open(cb_dir+"/data.yaml", 'w') as f:
@@ -300,8 +305,8 @@ def autolabel_yaml_writer():
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
         f.write("\nAuto labels:  # 라벨링 된 순서로 정렬됨\n")
         for autolabel in add_info:
-            f.write(f"  - weight : {autolabel['weight']}:\n    Bbox_added: {autolabel['Bbox_added']}\n")
-            f.write(f"    conf_threshold: {autolabel['conf_threshold']}\n    manual_confirms: {autolabel['manual_confirms']}")
+            f.write(f"  - weight : {autolabel['weight']}\n    Bbox_added: {autolabel['Bbox_added']}\n")
+            f.write(f"    conf_threshold: {autolabel['conf_threshold']}\n    manual_confirms: {autolabel['manual_confirms']}\n")
         f.close()
 
 def data_init():

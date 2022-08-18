@@ -1,7 +1,7 @@
 #######################################
 # src = 'Wesee_sample_parsed'
-src_pt = 'weseel_RAplus2.pt'
-target = 'weseel_RAplus2-weseel_RAplus2-Dobo_sample_parsed'
+src_pt = 'weseel_AL3.pt'
+target = 'Dobo_parsed'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+cb+'-'+target
 
@@ -10,8 +10,8 @@ iou_warning = 0.4 #보다 높으면 사용자 직접확인
 conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}
     "default":0.6,
     "Zebra_Cross":0.8,
-    "R_Signal":[0.32,0.35],
-    "G_Signal":[0.31,0.37],
+    "R_Signal":0.63,
+    "G_Signal":0.65,
     # "Braille_Block":0.7,
     # "person":,
     # "dog":,
@@ -143,6 +143,8 @@ def auto_labeling():
                 originals = original_txt.readlines()
                 for line in originals:
                     tok = list(map(float,line.split()))
+                    if len(tok)!=5:
+                        continue
                     tok[0] = int(tok[0])
                     gts.append(tok)
                 # Format is as follows:
@@ -151,8 +153,13 @@ def auto_labeling():
                 # [23, 0.39765364583333335, 0.43243518518518514, 0.07333854166666663, 0.07290740740740737]]
                 
                 for bbox in result:
-                    is_addbox=True
+                    # Too small box
+                    if (bbox["xmax"]-bbox["xmin"])*(bbox["ymax"]-bbox["ymin"]) <150:
+                        continue
+
+                    is_addbox=-1  # 이 값이 0으로 바뀌면 해당 박스는 추가하지 않는것이고, 1로 바뀌면 추가하는 것
                     name = bbox['name']
+                    class_num = int(bbox['class'])
                     confidence = round(bbox['confidence'], 5)
                     auto_level = conf['default']
                     if(name in ignore) or (name not in conf.keys() and confidence < conf['default']):
@@ -179,66 +186,77 @@ def auto_labeling():
                         h = gt[4]*img_size[1]
                         gt_box = [xc-w/2, yc-h/2, xc+w/2, yc+h/2]
                         this_iou = IoU(predict_box, gt_box)
-                        print(this_iou)
+                        # print(this_iou)
 
                         # High IoU Manual Labeling
                         if(this_iou > iou_warning):
-                            if(bbox['class']==gt[0]) and (name!="tree"):
-                                is_addbox = False
+                            if(class_num==gt[0]) and (name!="tree"):
+                                is_addbox = 0
                                 print(f"({num}/{total_num}) %-32s High IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
-                            draw = ImageDraw.Draw(image)
-                            draw_box(draw, gt_box, final[int(gt[0])],'red')
-                            draw_box(draw, predict_box, name,'blue')
-                            image.show()
+                            if confidence<=0.8 or this_iou<=0.8:
+                                draw = ImageDraw.Draw(image)
+                                draw_box(draw, gt_box, final[int(gt[0])],'red')
+                                draw_box(draw, predict_box, name,'blue')
+                                image.show()
                             while(True):
-                                ans = input(f"{image_file}: Confirm overlap box(blue) {name} over GT {final[gt[0]]}?: [y,n,replace,purge] > ")
-                                print(f"{ans} \n\t\t\t\t\t",end='')
+                                if confidence>0.8 and this_iou>0.8:
+                                    print(f"{image_file}: High-conf Automatical replace box(blue) {name} over GT {final[gt[0]]}")
+                                    ans='replace'
+                                else:
+                                    ans = input(f"{image_file}: Confirm overlap box(blue) {name} over GT {final[gt[0]]}?: [y,n,replace,purge] > ")
+                                    print(f"{ans} \n\t\t\t\t\t",end='')
+                                
                                 if ans=='y':
+                                    is_addbox = 1
                                     break
                                 elif ans=='n':    
-                                    is_addbox = False
+                                    is_addbox = 0
                                     print(f"Bbox overlap Manually ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
                                     break
                                 elif ans=='replace':
-                                    del gts[gt]
-                                    print(f"Bbox overlap Manually replaced to: {name} \tfrom: {final[gt[0]]}\tconf={confidence}")
+                                    is_addbox = 0
+                                    print(f"Bbox overlap Manual/Auto replaced to: {name} \tfrom: {final[gt[0]]}\tconf={confidence}")
+                                    gt[0]=class_num
                                     break
                                 elif ans=='purge':
-                                    del gts[gt]
-                                    is_addbox = False
+                                    gts.remove(gt)
+                                    is_addbox = 0
                                     print(f"Bbox overlap Manually purged both: {name} \tand GT: {final[gt[0]]}\tconf={confidence}")
                                     break
+                                else:
+                                    print("Wrong answer, do it again")
 
                             add_confirm(name, ans, confidence)
                             break
 
                         # Midium IoU
                         elif(this_iou > iou):
-                            if(bbox['class']==gt[0]) and (name!="tree"):
-                                is_addbox = False
+                            if(class_num==gt[0]) and (name!="tree"):
+                                is_addbox = 0
                                 print(f"({num}/{total_num}) %-32s Medium IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
 
-                        # Low-conf Quick Manual Labeling
-                        if(confidence < auto_level):
-                            draw = ImageDraw.Draw(image)
-                            draw_box(draw, predict_box, name,'green')
-                            image.show()
-                            while(True):
-                                ans = input(f"{image_file}: Confirm low-conf: {confidence} box(green) {name}?: [y,n] > ")
-                                print(f"{ans} \n\t\t\t\t\t",end='')
-                                
-                                if ans=='n':
-                                    is_addbox = False
-                                    print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
-                                    break
-                                elif ans=='y':
-                                    break
-                                else:
-                                    print("Wrong answer, do it again")
-                            add_confirm(name, ans, confidence)
-                            break 
+                    # Low-conf Quick Manual Labeling
+                    if(confidence < auto_level and is_addbox==-1):
+                        draw = ImageDraw.Draw(image)
+                        draw_box(draw, predict_box, name,'green')
+                        image.show()
+                        while(True):
+                            ans = input(f"{image_file}: Confirm low-conf: {confidence} box(green) {name}?: [y,n] > ")
+                            print(f"{ans} \n\t\t\t\t\t",end='')
+                            
+                            if ans=='n':
+                                is_addbox=0
+                                print(f"Low-conf Manually ignored: {name}\tconf={confidence}")
+                                break
+                            elif ans=='y':
+                                is_addbox=1
+                                break
+                            else:
+                                print("Wrong answer, do it again")
+                        add_confirm(name, ans, confidence)
+                        break 
                             
 
                     if is_addbox:
@@ -252,7 +270,7 @@ def auto_labeling():
                             yc = (bbox["ymax"]+bbox["ymin"])/2/img_size[1]
                             w = (bbox["xmax"]-bbox["xmin"])/img_size[0]
                             h = (bbox["ymax"]-bbox["ymin"])/img_size[1]
-                            new_box=[bbox['class'], xc, yc, w, h]
+                            new_box=[class_num, xc, yc, w, h]
                             gts.append(new_box)
                             if cases[name]=='Invalid':
                                 cases[name]=1
@@ -304,7 +322,7 @@ def autolabel_yaml_writer():
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(nc):
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
-        f.write("\nAuto labels:  # 라벨링 된 순서로 정렬됨\n")
+        f.write("\nAuto labels:  # 라벨링 된 순서로 정렬됨  # Higest Reject, Lowest Confirm\n")
         for autolabel in add_info:
             f.write(f"  - weight : {autolabel['weight']}\n    Bbox_added: {autolabel['Bbox_added']}\n")
             f.write(f"    conf_threshold: {autolabel['conf_threshold']}\n    manual_confirms: {autolabel['manual_confirms']}\n")

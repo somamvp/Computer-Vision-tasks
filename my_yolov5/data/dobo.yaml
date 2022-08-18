@@ -1,0 +1,41 @@
+path: ../dataset/Dobo_parsed
+train: train/images
+val: val/images
+test: test/images
+
+nc: 29
+names: ['wheelchair', 'truck', 'tree_trunk', 'traffic_sign', 'traffic_light', 'traffic_light_controller', 'table', 'stroller', 'stop', 'scooter', 'potted_plant', 'power_controller', 'pole', 'person', 'parking_meter', 'movable_signage', 'motorcycle', 'kiosk', 'fire_hydrant', 'dog', 'chair', 'cat', 'carrier', 'car', 'bus', 'bollard', 'bicycle', 'bench', 'barricade']
+# Dataset statistics: 
+#	Total imgs: 278175
+#		Train-Val-Test: [222711,27648,27816]
+#	Total Bbox: 2431884
+#	Too small boxes ignored: 476186
+#		wheelchair: 3650
+#		truck: 116392
+#		tree_trunk: 355461
+#		traffic_sign: 88366
+#		traffic_light: 44211
+#		traffic_light_controller: 4981
+#		table: 7965
+#		stroller: 5544
+#		stop: 14264
+#		scooter: 1676
+#		potted_plant: 63106
+#		power_controller: 4562
+#		pole: 333519
+#		person: 295470
+#		parking_meter: 282
+#		movable_signage: 107561
+#		motorcycle: 51317
+#		kiosk: 8483
+#		fire_hydrant: 7478
+#		dog: 9503
+#		chair: 25966
+#		cat: 117
+#		carrier: 8481
+#		car: 647902
+#		bus: 40571
+#		bollard: 108380
+#		bicycle: 44665
+#		bench: 17921
+#		barricade: 14090

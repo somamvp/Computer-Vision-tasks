@@ -281,7 +281,7 @@ def parser_2():
                             class_name = j["shapes"][i]["label"]
 
                             # 일부 클래스명이 숫자 1로 되어있는 오류가 있음    
-                            if(class_name=='1'):
+                            if(class_name=='1'): 
                                 continue
                             if(class_name not in list(classes.keys())):
                                 classes[class_name] = nc

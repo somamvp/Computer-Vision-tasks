@@ -7,13 +7,13 @@ nc: 27
 names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'train', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
 # Dataset statistics: 
 Total imgs: 26845
-Train-Val-Test: [19321,2436,0]
-Blank images ignored: 5088
+Train-Val-Test: [20547,2561,0]
+Blank images ignored: 3737
 
-Too small boxes ignored: 6203
+Too small boxes ignored: 6177
 Too large boxes ignored: 0
 
-Total Bbox: 52282
+Total Bbox: 50286
 Bbox distribution:
     Zebra_Cross: Invalid
     R_Signal: Invalid
@@ -23,12 +23,12 @@ Bbox distribution:
     dog: Invalid
     tree: 4280
     car: 3795
-    bus: 304
-    truck: 763
-    motorcycle: 162
+    bus: Invalid
+    truck: Invalid
+    motorcycle: Invalid
     bicycle: 817
     train: Invalid
-    wheelchair: 51
+    wheelchair: Invalid
     stroller: Invalid
     kickboard: 637
     bollard: 4256
@@ -36,7 +36,7 @@ Bbox distribution:
     labacon: 2077
     bench: 3540
     barricade: 12616
-    pot: 716
+    pot: Invalid
     table: Invalid
     chair: Invalid
     fire_hydrant: Invalid

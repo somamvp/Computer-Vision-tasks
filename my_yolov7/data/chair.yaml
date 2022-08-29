@@ -1,40 +1,40 @@
-train: ../../dataset/Wesee_np/train/images
-val: ../../dataset/Wesee_np/val/images
-test: ../../dataset/Wesee_np/test/images
+train: ../../dataset/Chair_np/train/images
+val: ../../dataset/Chair_np/val/images
+test: ../../dataset/Chair_np/test/images
 
 nc: 27
 names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'NA', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
 # Dataset statistics: 
-Total imgs: 36606
-Train-Val-Test: [31465,3901,1128]
-Blank images ignored: 112
+Total imgs: 26845
+Train-Val-Test: [20071,1808,1264]
+Blank images ignored: 3702
 
-Too small boxes ignored: 3530
+Too small boxes ignored: 6177
 Too large boxes ignored: 0
 
-Total Bbox: 47496
+Total Bbox: 50286
 Bbox distribution:
-    Zebra_Cross: 36720
-    R_Signal: 7832
-    G_Signal: 2944
-    Braille_Block: Invalid
-    person: Invalid
+    Zebra_Cross: Invalid
+    R_Signal: Invalid
+    G_Signal: Invalid
+    Braille_Block: 3419
+    person: 11630
     dog: Invalid
-    tree: Invalid
-    car: Invalid
+    tree: 4280
+    car: 3795
     bus: Invalid
     truck: Invalid
     motorcycle: Invalid
-    bicycle: Invalid
+    bicycle: 817
     NA: Invalid
     wheelchair: Invalid
     stroller: Invalid
-    kickboard: Invalid
-    bollard: Invalid
-    manhole: Invalid
-    labacon: Invalid
-    bench: Invalid
-    barricade: Invalid
+    kickboard: 637
+    bollard: 4256
+    manhole: 3219
+    labacon: 2077
+    bench: 3540
+    barricade: 12616
     pot: Invalid
     table: Invalid
     chair: Invalid

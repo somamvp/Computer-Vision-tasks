@@ -1,7 +1,7 @@
 {
 	"Final":{
 		"Original" : ["Zebra_Cross","R_Signal","G_Signal","Braille_Block","person","dog","tree","car","bus","truck","motorcycle","bicycle",
-			"train","wheelchair","stroller","kickboard","bollard","manhole","labacon","bench","barricade","pot","table","chair","fire_hydrant",
+			"NA","wheelchair","stroller","kickboard","bollard","manhole","labacon","bench","barricade","pot","table","chair","fire_hydrant",
 			"movable_signage","bus_stop"],
 		"Opinion":[],
 		"Label":{
@@ -17,7 +17,7 @@
 			"truck":9,
 			"motorcycle":10,
 			"bicycle":11,
-			"train":12,
+			"NA":12,
 			"wheelchair":13,
 			"stroller":14,
 			"kickboard":15,
@@ -137,7 +137,6 @@
 			"car":"car",
 			"motorcycle":"motorcycle", 
 			"bus":"bus", 
-			"train":"train", 
 			"truck":"truck", 
 			"fire hydrant":"fire_hydrant",
 			"bench":"bench"

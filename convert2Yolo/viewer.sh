@@ -1,0 +1,1 @@
+python label_visualization.py --img_path ../dataset/coco/val/images --label ../dataset/coco/annotations/instances_val2017.json --img_type '.jpg' --datasets COCO --convert_output_path ../dataset/coco/val/labels --cls_list_file coco.names

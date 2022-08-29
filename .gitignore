@@ -23,11 +23,14 @@
 *.pt
 !my_yolov5/setup.cfg
 !my_yolov5/cfg/yolov3*.cfg
+!class.json
 
 my_yolov5/storage.googleapis.com
 my_yolov5/runs/*
 my_yolov7/runs/*
 
+convert2Yolo/images
+convert2Yolo/manifest.txt
 
 results*.csv
 
@@ -114,12 +117,6 @@ my_yolov5/.ipynb_checkpoints
 # pyenv
 my_yolov5/.python-version
 
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
 # dotenv
 my_yolov5/.env
 
@@ -130,9 +127,6 @@ ENV*/
 
 # mypy
 .mypy_cache/
-
-
-# https://github.com/github/gitignore/blob/master/Global/macOS.gitignore -----------------------------------------------
 
 # General
 .DS_Store
@@ -155,44 +149,6 @@ Icon?
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
-
-# https://github.com/github/gitignore/blob/master/Global/JetBrains.gitignore
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and WebStorm
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
-# User-specific stuff:
-.idea/*
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/dictionaries
-.html  # Bokeh Plots
-.pg  # TensorFlow Frozen Graphs
-.avi # videos
-
-# Sensitive or high-churn files:
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-
-# Gradle:
-.idea/**/gradle.xml
-.idea/**/libraries
-
-# CMake
-cmake-build-debug/
-cmake-build-release/
-
-# Mongo Explorer plugin:
-.idea/**/mongoSettings.xml
-
-# IntelliJ
-out/
-
-# mpeltonen/sbt-idea plugin
-.idea_modules/
 
 # JIRA plugin
 atlassian-ide-plugin.xml

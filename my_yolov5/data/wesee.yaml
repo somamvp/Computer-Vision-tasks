@@ -1,7 +1,7 @@
 path: ../../dataset/Wesee_parsed
-train: ./train/images
-val: ./val/images
-test: ./test/images
+train: train/images
+val: val/images
+test: test/images
 
 nc: 3
 names: ['Zebra_Cross', 'R_Signal', 'G_Signal']

@@ -6,7 +6,7 @@ if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 force_classing = True
 
-src_dir = '../dataset/Chair'
+src_dir = '../dataset/Dobo'
 target_dir = src_dir+'_np'
 
 # Ver4 변경사항 :

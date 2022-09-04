@@ -1,22 +1,19 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 force_classing = True
 
-data_ratio = [8,1,1]  # train/val/test 합이 10이여야함
-src_dir = '../dataset/Wesee_sample'
-target_dir = src_dir+'_parsed'
+src_dir = '../dataset/Dobo'
+target_dir = src_dir+'_np'
 
-# Ver3 변경사항 :
-# - 데이터셋 타입이 자동으로 인식됨
-# - Path가 랜덤하게 생성되지 않음. 파일명의 10의 자릿수 modulus로 분류됨
-# - Annotation만 생성 시 이미지는 보존됨
-# - class.json으로 정해진 클래스를 강제 적용하도록 함
+# Ver4 변경사항 :
+# - Test/val/test 간 이미지 도메인을 나눠놓음 (데이터셋마다 다르게 적용됨)
+# - 바로 Final class로 라벨링 됨
 #######################################################
-dataset_type = 0
+dataset_type = 6
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
@@ -39,25 +36,49 @@ import random
 import json
 
 def path_generator(indicator):
-    dest=0
-    # total_score = sum(data_ratio)
-    # tmp = random.random()
-    if(not indicator.isnumeric() or int(indicator) < data_ratio[0]):
-        path = target_dir+'/train'
-        dest=0
-    elif(int(indicator) < (data_ratio[0]+data_ratio[1])):
-        path = target_dir+'/val'
-        dest=1
+    global data_name
+    dest=-1
+    if data_name=='Wesee' or data_name=='Dobo':
+        if('KSC' in indicator):
+            path = target_dir+'/val'
+            dest=1
+        elif('MIN' in indicator):
+            path = target_dir+'/test'
+            dest=2
+        else:
+            path = target_dir+'/train'
+            dest=0
+
+    elif data_name=='Chair':
+        if('가천대' in indicator):
+            path = target_dir+'/val'
+            dest=1
+        elif('폴리텍' in indicator):
+            path = target_dir+'/test'
+            dest=2
+        else:
+            path = target_dir+'/train'
+            dest=0
+    elif data_name=='Dobo':
+        if('KSC' in indicator):
+            path = target_dir+'/val'
+            dest=1
+        elif('MIN' in indicator):
+            path = target_dir+'/test'
+            dest=2
+        else:
+            path = target_dir+'/train'
+            dest=0
     else:
-        path = target_dir+'/test'
-        dest=2
+        print("path generate error")
+        exit()
     return [path, dest]  # dir_path & ENUM
 
 def yaml_writer():
     class_ = list(classes.keys())
     with open(target_dir+"/data.yaml", 'w') as f:
-        f.write("path: "+target_dir+"\ntrain: train/images\nval: val/images\n")
-        f.write("test: test/images\n\nnc: %d\nnames: ["%nc)
+        f.write(f"train: ../{target_dir}/train/images\nval: ../{target_dir}/val/images\n")
+        f.write(f"test: ../{target_dir}/test/images\n\nnc: {nc}\nnames: [")
         len_ = len(class_)
         for i in range(len_):
             f.write("'%s'"%class_[i])
@@ -70,7 +91,10 @@ def yaml_writer():
         # f.write("Too small boxes ignored: %d\nToo large boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(len_):
-            f.write("    %s: %d\n"%(class_[i],cases[class_[i]]))
+            if(cases[class_[i]]!=0):
+                f.write("    %s: %d\n"%(class_[i],cases[class_[i]]))
+            else:
+                f.write("    %s: Invalid\n"%(class_[i]))
         f.close()
 
 def image_maker(img_dir, image_name, store_dir, store_name):
@@ -129,7 +153,7 @@ def parser_0():
                     # Classes
                     if "id" not in line:
                         class_name = line[line.find('<name>')+6 : line.find("</name>")]
-                        if(class_name not in list(classes.keys())):
+                        if(class_name not in list(classes.keys()) and not force_classing):
                             classes[class_name] = nc
                             cases[class_name]=0
                             nc+=1
@@ -140,7 +164,7 @@ def parser_0():
                             print(image_name+'.jpg  [Missing]')
                             continue
                         
-                        path = path_generator(image_name[-2])
+                        path = path_generator(image_name)
                         train_val_test[path[1]] += 1
                         width = float(line[line.find('width')+7 : line.find('height')-2])
                         height = float(line[line.find('height')+8 : line.find('>')-1])
@@ -172,7 +196,6 @@ def parser_1():
     mod=3  # 3장 중 한장씩만 입력됨
     global nc
     for type in ['/train','/val']:
-    # for type in ['/val']:
         fn=0
         label_folders = os.listdir(src_dir+type+'/labels')
         if len(label_folders)==0:
@@ -198,19 +221,18 @@ def parser_1():
                 iter = (iter+1)%mod
                 if iter!=mod-1:
                     continue
-                if type=='/train':
-                    train_val_test[0] += 1
-                else:
-                    train_val_test[1] += 1
                 img_box[0] += 1
                 with open(label_path+'/'+label, 'r') as l:
                     j = json.load(l)
                     file_name = location+'_'+period+label[label.find("Left_")+5:label.find(".json")]
-                    with open(target_dir+type+'/labels/'+file_name+'.txt','w') as t:
+                    path = path_generator(location)
+                    train_val_test[path[1]] += 1
+
+                    with open(path[0]+'/labels/'+file_name+'.txt','w') as t:
                         img_box[1] += len(j["shapes"])
                         for feature in j["shapes"]:
                             class_name = feature["label"]
-                            if class_name not in list(classes.keys()):
+                            if class_name not in list(classes.keys()) and not force_classing:
                                 classes[class_name] = nc
                                 cases[class_name] = 1
                                 nc+=1
@@ -242,7 +264,7 @@ def parser_1():
                 if image_process:
                     image_name = label[:label.find('.json')]+'.jpg'
                     if os.path.exists(image_path+'/'+image_name):
-                        image_maker(image_path, image_name, target_dir+type+'/images', file_name+'.jpg')
+                        image_maker(image_path, image_name,  path[0]+'/images', file_name+'.jpg')
                     else:
                         print("Cannot find image %s"%(image_path+'/'+image_name))
 
@@ -273,7 +295,7 @@ def parser_2():
                     
                     img_box[0]+=1
                     img_box[1]+=len(j["shapes"])
-                    path = path_generator(image_name[-2])
+                    path = path_generator(image_name)
                     train_val_test[path[1]] += 1
 
                     with open(path[0]+'/labels/'+image_name+'.txt', 'w') as t:
@@ -283,7 +305,7 @@ def parser_2():
                             # 일부 클래스명이 숫자 1로 되어있는 오류가 있음    
                             if(class_name=='1'): 
                                 continue
-                            if(class_name not in list(classes.keys())):
+                            if(class_name not in list(classes.keys()) and not force_classing):
                                 classes[class_name] = nc
                                 cases[class_name]=0
                                 nc+=1
@@ -329,13 +351,15 @@ def class_init(dataset):
     with open('class.json','r',encoding="UTF-8") as class_json:
         forced_class = json.load(class_json)
 
-    for c in forced_class[dataset]["Original"]:
+    for c in forced_class[data_name]["Original"]:
         classes[c] = nc
         cases[c]=0
         nc+=1
 
 
 def main():
+    global data_name
+
     if src_dir==target_dir:
         print("ERROR : 소스 폴더와 타켓 폴더가 같습니다")
         return
@@ -400,8 +424,8 @@ def main():
 
     # Write data.yaml
     yaml_writer()
-    if train_val_test[2]==0:
-        shutil.rmtree(target_dir+'/test')
+    # if train_val_test[2]==0:
+    #     shutil.rmtree(target_dir+'/test')
     print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
         train_val_test[1], train_val_test[2]))
 

@@ -2,11 +2,11 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Dobo_sample_parsed'
+src_dir = '../dataset/Dobo_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
-ratio_blankimage = 0.5  # Sustain image without any bounding box randomly (0~1)
+ratio_blankimage = 1  # Sustain image without any bounding box randomly (0~1)
 size_threshold = True
 tiny_cutoff = 150
 large_cutoff = 300000
@@ -111,8 +111,10 @@ def yaml_writer_ReAnnotation():
     global final
     
     with open(src_dir+"/data.yaml", 'w') as f:
-        f.write("path: "+src_dir+"\ntrain: train/images\nval: val/images\n")
-        f.write("test: test/images\n\nnc: %d\nnames: ["%len(final))
+        # f.write("path: "+src_dir+"\ntrain: train/images\nval: val/images\n")
+        # f.write("test: test/images\n\nnc: %d\nnames: ["%len(final))
+        f.write(f"train: ../{src_dir}/train/images\nval: ../{src_dir}/val/images\n")
+        f.write(f"test: ../{src_dir}/test/images\n\nnc: {len(final)}\nnames: [")
         len_ = len(final)
         for i in range(len_):
             f.write("'%s'"%final[i])
@@ -146,7 +148,7 @@ def data_init(data_name):
     for name in src_yaml["names"]:
         src_class[name] = cnt
         cnt+=1
-    src_dir = src_yaml["path"]
+    # src_dir = src_yaml["path"]
 
     class_json = json.load(open('class.json','r', encoding='UTF-8'))
     target_class = class_json["Final"]["Label"]

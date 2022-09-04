@@ -6,12 +6,12 @@ cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+cb+'-'+target
 
 iou = 0.3 #보다 높고 클래스가 같으면 무시
-iou_warning = 0.4 #보다 높으면 사용자 직접확인
-conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}
+iou_warning = 0.5 #보다 높으면 사용자 직접확인
+conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 보수적으로 잡기
     "default":0.6,
     "Zebra_Cross":0.8,
-    "R_Signal":0.63,
-    "G_Signal":0.65,
+    "R_Signal":0.6,
+    "G_Signal":0.6,
     # "Braille_Block":0.7,
     # "person":,
     # "dog":,

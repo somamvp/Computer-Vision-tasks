@@ -365,7 +365,7 @@ def parser_3():
                 path = path_generator(label)
                 train_val_test[path[1]] += 1
 
-                file_name = label.replace(' ','_')[:-4]
+                file_name = label.replace(' ','_')[:-5]
                 with open(path[0]+'/labels/'+file_name+'.txt','w') as t:
                     image_name = j["images"]["file_name"]
                     image_file = (src_dir+type+image_folder+image_name)

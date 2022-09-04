@@ -122,9 +122,23 @@
 	},
 
 	"Barrier":{
-		"Original" :[],
-		"Opinion" : [],
-		"Mapping" : {}
+		"Original" :["wall", "floor_normal", "beverage_vending_machine", "door_normal", "sidegap_out", "paved_state_normal", "walkway_paved",
+			"block_kind_good", "walkway_block", "ramp_yes", "pillar", "parkspace", "steepramp", "block_state_normal", "brailleblock_dot", 
+			"fireshutter", "sign_disabled_icon", "lift_button_normal", "lift_door", "direction_sign_straight", "direction_sign_exit", "stair_normal", 
+			"protect_wall_guardrail", "tierbump", "trash_can", "brailleblock_line", "beverage_desk", "lift", "sidegap_in", "sign_disabled_toilet", 
+			"direction_sign_right", "chair_multi", "handle_vertical", "block_state_broken", "continuity_manhole", "bump_slow", "sewer_line", "continuity_tree", 
+			"brailleblock_dot_broken", "chair_one", "ramp_no", "handle_lever", "restspace", "block_kind_bad", "sign_disabled_elevator", "window_sliding", 
+			"paved_state_broken", "window_casement", "handle_circular", "planecrosswalk_normal", "stone", "flatness_A", "protect_wall_protective", 
+			"direction_sign_left", "outcurb_slide", "outcurb_rectangle", "chair_handle", "flatness_B", "door_rotation", "sign_disabled_parking", 
+			"sign_disabled_callbell", "lift_button_emergency", "stair_broken", "sewer_cross", "brailleblock_line_broken", "flatness_D", "enterrail", 
+			"mailbox", "outcurb_slide_broken", "resting_place_roof", "chair_back", "planecrosswalk_broken", "flowerbed", "weed", "outcurb_rectangle_broken", 
+			"lift_button_openarea", "lift_button_layer", "braille_sign", "chair_circular", "bicycleroad_broken", "bicycleroad_normal", "bump_zigzag", "flatness_C", 
+			"sign_disabled_ramp", "flatness_E", "floor_broken", "reception_desk", "number_ticket_machine"],
+		"Opinion" : ["점이 2개밖에 없어서 박스가 하나도 생성되지 않은 클래스도 많음"],
+		"Mapping" : {
+			"brailleblock_line":"Braille_Block",
+			"braille_sign":"Braille_Block"
+		}
 	},
 
 	"Coco":{

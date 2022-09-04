@@ -1,12 +1,12 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
-force_classing = False
+force_classing = True
 
-src_dir = '../dataset/Barrier_sample'
+src_dir = '../dataset/Barrier'
 target_dir = src_dir+'_np'
 
 # Ver4 변경사항 :
@@ -351,7 +351,11 @@ def parser_3():
         if len(label_folders)==0:
             continue
         
+        # 폴더 하나마다 실행
         for label_folder in label_folders:
+            fn+=1
+            print("Processing %s/ %s ...  (%d/%d)"%(type, label_folder,fn,len(label_folders)))
+
             label_folder = '/'+label_folder+'/'
             image_folder = '/[원천]'+label_folder[5:]
             labels = os.listdir(src_dir+type+label_folder)
@@ -364,7 +368,7 @@ def parser_3():
                 path = path_generator(label)
                 train_val_test[path[1]] += 1
 
-                file_name = label.replace(' ','_')[:-4]
+                file_name = label.replace(' ','_')[:-5]
                 with open(path[0]+'/labels/'+file_name+'.txt','w') as t:
                     image_name = j["images"]["file_name"]
                     image_file = (src_dir+type+image_folder+image_name)
@@ -396,7 +400,7 @@ def parser_3():
 
                         # 바운딩 박스를 나타내기 위한 점 갯수가 부족
                         if(len(points) <= 2):
-                            print(f"Contains less than three points for segmentation : {image_name}, {class_name}")
+                            # print(f"Contains less than three points for segmentation : {image_name}, {class_name}")
                             continue
 
                         x=[]
@@ -418,13 +422,10 @@ def parser_3():
                             img_box[1] += 1
                             t.write(parse)
             if(image_process):
-                    image_maker(image_folder, image_file.replace(' ','_'), path[0]+'/images', image_file.replace(' ','_'))
+                    image_maker(image_folder, image_name, path[0]+'/images', image_name.replace(' ','_'))
 
-
-
-
-    print(classes.keys())
-    print(nc)
+    # print(classes.keys())
+    # print(nc)
     return
 
 def class_init(data_name):

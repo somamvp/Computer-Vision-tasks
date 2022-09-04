@@ -17,7 +17,7 @@
 			"truck":9,
 			"motorcycle":10,
 			"bicycle":11,
-			"NA":12,
+			"none":12,
 			"wheelchair":13,
 			"stroller":14,
 			"kickboard":15,

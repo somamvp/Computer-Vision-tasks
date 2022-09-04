@@ -1,18 +1,21 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/Barrier_sample_np/val/'
+src_dir = '../dataset/Barrier_np/train/'
 find_all = False
 show_others = True
+data_name='Final'
 
 wanted = {
-    '65':'brailleblock_line_broken',
-    '49':'brailleblock_dot_broken'
+    '77':'braille_sign'
+    # '66':'enterrail', '84':'flatness_E'
+    # '64':'brailleblock_line_broken',
+    # '48':'brailleblock_dot_broken'
 }
 # wanted={'9':'scooter'}  #Dobo
 # wanted = {'14':'unusual bench','16':"Chair"}   #Chair set
 # wanted = {'8':'bus','10':'motorcycle'}
-wanted = { 
+# wanted = { 
 # '0':"Zebra_Cross",
 # '1':"R_Signal",
 # '2':"G_Signal",
@@ -41,10 +44,10 @@ wanted = {
 # '25':"movable_signage",
 # '26':"bus_stop",
 # ' ':"wrong approach"
-}
+# }
 
 def main():
-    final = json.load(open('class.json','r', encoding='UTF-8'))['Barrier']['Original']
+    default = json.load(open('class.json','r', encoding='UTF-8'))[data_name]['Original']
         
     label_path = src_dir+'labels'
     image_path = src_dir+'images'
@@ -54,11 +57,12 @@ def main():
     font = ImageFont.truetype("my_yolov5/utils/arial_bold.ttf", font_size)
 
     for label in label_list:
+        detected=find_all
         image_name = label[:label.find(".txt")]+".jpg"
         if(not os.path.exists(image_path+'/'+image_name)):
             image_name = label[:label.find(".txt")]+".png"
         with open(label_path+'/'+label) as l:
-            detected=False
+            
             lines = l.readlines()
             image = Image.open(image_path+'/'+image_name)
             # print(text)
@@ -74,8 +78,6 @@ def main():
                 xbr=int(x+w/2)
                 ybr=int(y+h/2)
 
-                detected = find_all
-
                 if tok[0] in list(wanted.keys()):
                     detected=True
                     print(f"{image_name} contains --{wanted[tok[0]]}--\t--Size: {xbr-xtl}*{ybr-ytl} = {(xbr-xtl)*(ybr-ytl)}")
@@ -85,7 +87,7 @@ def main():
                     draw.line((xtl, ybr, xbr, ybr), fill="red", width=2)
                     draw.line((xbr, ybr, xbr, ytl), fill="red", width=2)
                     draw.line((xbr, ytl, xtl, ytl), fill="red", width=2)
-                    text = final[int(tok[0])]
+                    text = default[int(tok[0])]
                     bbox = font.getbbox(text)
                     text_shift = 12
                     draw.rectangle((xtl, ytl-text_shift, xtl + bbox[2], ytl), fill='red')

@@ -2,7 +2,7 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Dobo_np'
+src_dir = '../dataset/Barrier_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
@@ -19,7 +19,7 @@ dataset_type = 5
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
 2 = Wesee 신호등 셀렉트스타
-3 = COCO [Not Working now]
+3 = Barrier 배리어프리 aihub
 '''
 #######################################################################
 
@@ -37,14 +37,16 @@ img_box=[0,0,0,0,0]   # Number of total [images, bboxes, tiny, large, blank_ripp
 def make_mapping():
     cnt=0
     for probe in list(src_class.keys()):
-        convert = to_unified_class[probe]
+        if probe not in to_unified_class.keys():
+            convert = 'NA'
+        else:
+            convert = to_unified_class[probe]
         if convert in target_class.keys():
             mapping[src_class[probe]] = target_class[convert]
             cases[convert] = 0
         else:
             if(convert=="NA"):
                 continue
-            print(f"== WARNING == Ignored class: {probe}")
 
 def reannotation():
     global src_dir, final
@@ -164,8 +166,8 @@ def main():
         data_name = 'Dobo'
     elif("chair" in src_dir.lower()):
         data_name = 'Chair'
-    elif("coco" in src_dir.lower()):
-        data_name = 'Coco'
+    elif("barrier" in src_dir.lower()):
+        data_name = 'Barrier'
     else:
         print("Dataset type auto detect failed. Switching to manual")
         if dataset_type==0:
@@ -175,7 +177,7 @@ def main():
         elif dataset_type==2:
             data_name = "Wesee"
         elif dataset_type==3:
-            data_name = "Coco"
+            data_name = "Barrier"
         else:
             print("Wrong dataset type number")
             return

@@ -134,13 +134,16 @@
 			"mailbox", "outcurb_slide_broken", "resting_place_roof", "chair_back", "planecrosswalk_broken", "flowerbed", "weed", "outcurb_rectangle_broken", 
 			"lift_button_openarea", "lift_button_layer", "braille_sign", "chair_circular", "bicycleroad_broken", "bicycleroad_normal", "bump_zigzag", "flatness_C", 
 			"sign_disabled_ramp", "flatness_E", "floor_broken", "reception_desk", "number_ticket_machine"],
-		"Opinion" : ["점이 2개밖에 없어서 박스가 하나도 생성되지 않은 클래스도 많음", "nc=88"],
+		"Opinion" : ["점이 2개밖에 없어서 박스가 하나도 생성되지 않은 클래스도 많음", "nc=88",
+				"restspace는 계단 중간에 평평한 공간", "outcurb는 연석 계열", "sewer_cross는 배수구", "enterrail은 학교정문 닫을때 있는 레일", "Braille_sign은 과속방지턱"],
 		"Mapping" : {
 			"wall":"NA",
 			"floor_normal":"NA",
 			"brailleblock_line":"Braille_Block",
 			"brailleblock_dot":"Braille_Block",
-			"braille_sign":"Braille_Block"
+			"brailleblock_line_broken":"Braille_Block",
+			"brailleblock_dot_broken":"Braille_Block",
+			"braille_sign":"NA"
 		}
 	},
 

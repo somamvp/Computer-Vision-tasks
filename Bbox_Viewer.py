@@ -1,14 +1,21 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/Wesee_parsed/train/'
-show_others = False
+src_dir = '../dataset/Barrier_sample_np/val/'
+find_all = False
+show_others = True
+
+wanted = {
+    '65':'brailleblock_line_broken',
+    '49':'brailleblock_dot_broken'
+}
 # wanted={'9':'scooter'}  #Dobo
 # wanted = {'14':'unusual bench','16':"Chair"}   #Chair set
 # wanted = {'8':'bus','10':'motorcycle'}
-wanted = { '0':"Zebra_Cross",
-'1':"R_Signal",
-'2':"G_Signal",
+wanted = { 
+# '0':"Zebra_Cross",
+# '1':"R_Signal",
+# '2':"G_Signal",
 # '3':"Braille_Block",
 # '4':"person",
 # '5':"dog",
@@ -34,10 +41,10 @@ wanted = { '0':"Zebra_Cross",
 # '25':"movable_signage",
 # '26':"bus_stop",
 # ' ':"wrong approach"
-}  #all
+}
 
 def main():
-    final = json.load(open('class.json',))['Final']['Original']
+    final = json.load(open('class.json','r', encoding='UTF-8'))['Barrier']['Original']
         
     label_path = src_dir+'labels'
     image_path = src_dir+'images'
@@ -66,6 +73,8 @@ def main():
                 ytl=int(y-h/2)
                 xbr=int(x+w/2)
                 ybr=int(y+h/2)
+
+                detected = find_all
 
                 if tok[0] in list(wanted.keys()):
                     detected=True

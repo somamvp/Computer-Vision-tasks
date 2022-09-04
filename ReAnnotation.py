@@ -42,7 +42,7 @@ def make_mapping():
             mapping[src_class[probe]] = target_class[convert]
             cases[convert] = 0
         else:
-            if(convert=="none"):
+            if(convert=="NA"):
                 continue
             print(f"== WARNING == Ignored class: {probe}")
 

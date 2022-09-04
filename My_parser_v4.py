@@ -1,10 +1,10 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
-force_classing = False
+force_classing = True
 
 src_dir = '../dataset/Barrier_sample'
 target_dir = src_dir+'_np'
@@ -97,7 +97,7 @@ def yaml_writer():
                 f.write("    %s: Invalid\n"%(class_[i]))
         f.close()
 
-def image_maker(img_dir, image_name, store_dir, store_name):
+def image_maker(img_dir, image_name, store_dir, store_name):  # 기존폴더, 기존이름, 대상폴더, 대상이름
     img = Image.open(img_dir+'/'+image_name)
     img_resize = img.resize((imgsize[0],imgsize[1]))
 
@@ -351,9 +351,10 @@ def parser_3():
         if len(label_folders)==0:
             continue
         
+        # 하나의 폴더마다 실행
         for label_folder in label_folders:
             label_folder = '/'+label_folder+'/'
-            image_folder = '/[원천]'+label_folder[5:]
+            image_folder = '/[원천]'+label_folder[5:]  # 이미지폴더
             labels = os.listdir(src_dir+type+label_folder)
 
             # 하나의 라벨마다 실행
@@ -396,7 +397,7 @@ def parser_3():
 
                         # 바운딩 박스를 나타내기 위한 점 갯수가 부족
                         if(len(points) <= 2):
-                            print(f"Contains less than three points for segmentation : {image_name}, {class_name}")
+                            # print(f"Contains less than three points for segmentation : {image_name}, {class_name}")
                             continue
 
                         x=[]
@@ -417,14 +418,11 @@ def parser_3():
                             cases[class_name] += 1
                             img_box[1] += 1
                             t.write(parse)
-            if(image_process):
-                    image_maker(image_folder, image_file.replace(' ','_'), path[0]+'/images', image_file.replace(' ','_'))
+                if(image_process):
+                    image_maker(src_dir+type+image_folder, image_name, path[0]+'/images', image_name.replace(' ','_'))
 
-
-
-
-    print(classes.keys())
-    print(nc)
+    # print(classes.keys())
+    # print(nc)
     return
 
 def class_init(data_name):

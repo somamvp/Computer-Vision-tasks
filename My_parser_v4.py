@@ -32,7 +32,6 @@ nc=0
 from PIL import Image
 import os
 import shutil
-import random
 import json
 
 def path_generator(indicator):

@@ -1,4 +1,8 @@
 {
+	"tmp":{
+		"Original" : ["Braille_Block"],
+		"Label":{"Braille_Block":0}
+	},
 	"Final":{
 		"Original" : ["Zebra_Cross","R_Signal","G_Signal","Braille_Block","person","dog","tree","car","bus","truck","motorcycle","bicycle",
 			"none","wheelchair","stroller","kickboard","bollard","manhole","labacon","bench","barricade","pot","table","chair","fire_hydrant",

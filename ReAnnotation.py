@@ -6,6 +6,7 @@ src_dir = '../dataset/Barrier_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
+destination = 'Final'
 ratio_blankimage = 1  # Sustain image without any bounding box randomly (0~1)
 size_threshold = True
 tiny_cutoff = 150
@@ -153,9 +154,10 @@ def data_init(data_name):
     # src_dir = src_yaml["path"]
 
     class_json = json.load(open('class.json','r', encoding='UTF-8'))
-    target_class = class_json["Final"]["Label"]
+    target_class = class_json[destination]["Label"]
     to_unified_class = class_json[data_name]["Mapping"]  
-    final = class_json["Final"]["Original"]
+    final = class_json[destination]["Original"]
+    
     for name in final:
         cases[name] = 'Invalid'
 

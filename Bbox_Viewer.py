@@ -6,20 +6,20 @@ find_all = False
 show_others = True
 data_name='Final'
 
-wanted = {
-    '77':'braille_sign'
+# wanted = {
+    # '77':'braille_sign'
     # '66':'enterrail', '84':'flatness_E'
     # '64':'brailleblock_line_broken',
     # '48':'brailleblock_dot_broken'
-}
+# }
 # wanted={'9':'scooter'}  #Dobo
 # wanted = {'14':'unusual bench','16':"Chair"}   #Chair set
 # wanted = {'8':'bus','10':'motorcycle'}
-# wanted = { 
+wanted = { 
 # '0':"Zebra_Cross",
 # '1':"R_Signal",
 # '2':"G_Signal",
-# '3':"Braille_Block",
+'3':"Braille_Block",
 # '4':"person",
 # '5':"dog",
 # '6':"tree",
@@ -44,7 +44,7 @@ wanted = {
 # '25':"movable_signage",
 # '26':"bus_stop",
 # ' ':"wrong approach"
-# }
+}
 
 def main():
     default = json.load(open('class.json','r', encoding='UTF-8'))[data_name]['Original']

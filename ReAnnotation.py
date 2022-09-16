@@ -6,8 +6,8 @@ src_dir = '../dataset/Barrier_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
-destination = 'Final'
-ratio_blankimage = 1  # Sustain image without any bounding box randomly (0~1)
+destination = 'tmp'  # 원하는 class mapping 선택
+ratio_blankimage = 0.2  # Sustain image without any bounding box randomly (0~1)
 size_threshold = True
 tiny_cutoff = 150
 large_cutoff = 300000
@@ -63,7 +63,7 @@ def reannotation():
         
         for txt in file_list:
             with open(old_path+txt, 'r') as old:
-                new = open(new_path+txt, 'w')
+                
                 bboxes=[]
                 lines = old.readlines()
                 for line in lines:
@@ -91,9 +91,10 @@ def reannotation():
 
                 if(len(bboxes)==0):  # 라벨이 하나도 없는 경우
                     if(random.random()>=ratio_blankimage):
+                        img_box[0]-=1
                         img_box[4]+=1
                         continue
-
+                new = open(new_path+txt, 'w')
                 img_box[1]+=len(bboxes)
                 for bbox in bboxes:
                     # print(final[int(bbox[0])])

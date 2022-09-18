@@ -1,7 +1,7 @@
 # Reannotate에서 무시된 이미지를 삭제하고 기타 필요없는 파일들은 삭제해 필요한 파일만 남기는 작업 #
 
 global src_dir
-src_dir = '../dataset/Barrier_np'
+src_dir = '../dataset/Barrier_np_old'
 
 ##########################################################
 

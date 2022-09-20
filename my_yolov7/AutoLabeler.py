@@ -1,17 +1,17 @@
 #######################################
 # src = 'Wesee_sample_parsed'
-src_pt = 'wesee7_ind3.pt'
+src_pt = 'wesee7_ind4.pt'
 target = 'Barrier_np'
-pl = src_pt[:src_pt.find(".")]
-pl_dir = '../../dataset/'+target+'-'+pl
+cb = src_pt[:src_pt.find(".")]
+cb_dir = '../../dataset/'+target+'-'+cb
 
 iou = 0.3 #보다 높고 클래스가 같으면 무시
 iou_warning = 0.5 #보다 높으면 사용자 직접확인
 conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 보수적으로 잡기
-    "default":0.7,
-    "Zebra_Cross":0.8,
-    "R_Signal":0.6,
-    "G_Signal":0.6,
+    "default":0.6,
+    "Zebra_Cross":0.6,
+    "R_Signal":0.4,
+    "G_Signal":0.4,
     # "Braille_Block":0.7,
     # "person":,
     # "dog":,
@@ -40,10 +40,18 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
 
 img_size= [640, 360]
 #######################################
-import yaml, os, shutil, json
+import yaml, os, shutil, json, easydict
 from PIL import Image, ImageDraw, ImageFont
-import torch
-from models.common import AutoShape, DetectMultiBackend
+import torch, random
+from pathlib import Path
+
+from models.experimental import attempt_load
+from utils.datasets import LoadStreams, LoadImages
+from utils.general import check_img_size, check_requirements, check_imshow, non_max_suppression, apply_classifier, \
+    scale_coords, xyxy2xywh, strip_optimizer, increment_path
+from utils.plots import plot_one_box
+from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
+
 global final, ignore, add_info
 confirms={} # 통합클래스이름: [가장높은 불합격conf, 가장낮은 합격conf]
 final=[]  # 통합클래스이름
@@ -60,10 +68,44 @@ font = ImageFont.truetype("utils/arial_bold.ttf", 15)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"using devide {DEVICE}")
 
+##### 모델 불러오기 #####
+opt = easydict.EasyDict({'agnostic_nms':False, 'augment':True, 'classes':None, 'conf_thres':0.25, 'device':'', 
+                            'exist_ok':False, 'img_size':640, 'iou_thres':0.45, 'name':'exp',
+                            'no_trace':False, 'nosave':False, 'project':'runs/detect', 'save_conf':True, 'save_txt':True, 'source':'',
+                            'update':False, 'view_img':False, 'weights':[src_pt]})
 
-model = AutoShape( 
-    DetectMultiBackend(weights=src_pt, device=torch.device(DEVICE))
-)
+source, weights, view_img, save_txt, imgsz, trace = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, not opt.no_trace
+save_img = not opt.nosave and not source.endswith('.txt')  # save inference images
+
+# Initialize
+device = select_device(opt.device)
+half = device.type != 'cpu'  # half precision only supported on CUDA
+
+# Load model
+model = attempt_load(weights, map_location=device)  # load FP32 model
+
+# Directories
+# save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
+# (save_dir).mkdir(parents=True, exist_ok=True)  # make dir
+stride = int(model.stride.max())  # model stride
+imgsz = check_img_size(imgsz, s=stride)  # check img_size
+
+if trace:
+    model = TracedModel(model, device, opt.img_size)
+
+# Get names and colors
+names = model.module.names if hasattr(model, 'module') else model.names
+colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
+# BGR
+colors[0] = [235,143,67] #Crosswalk
+colors[1] = [0,0,255] #R_Signal
+colors[2] = [0,255,0] #G_Signal
+colors[3] = [0,212,255] #Braille
+
+if device.type != 'cpu':
+    model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))
+
+##### 모델 불러오기 완료 #####
 
 def IoU(box1, box2):
     # box = (x1, y1, x2, y2)
@@ -108,6 +150,51 @@ def add_confirm(name, ans, conf):
         elif(confirms[name][0]<conf):
             confirms[name][0]=conf
 
+def inference(image_path):
+    dataset = LoadImages(image_path, img_size=imgsz, stride=stride)
+                
+    # YOLOv7 model
+    for path, img, im0s, vid_cap in dataset:
+        img = torch.from_numpy(img).to(device)
+        img = img.float()  # uint8 to fp32
+        img /= 255.0  # 0 - 255 to 0.0 - 1.0
+        if img.ndimension() == 3:
+            img = img.unsqueeze(0)
+
+        boxes=[]
+        # Inference
+        pred = model(img, augment=opt.augment)[0]
+        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+
+        for i, det in enumerate(pred):  # detections per image
+            s, im0, frame = '', im0s, getattr(dataset, 'frame', 0)
+            # s += '%gx%g ' % img.shape[2:]  # print string
+            # gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
+            if len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+            
+                # Print results
+                # for c in det[:, -1].unique():
+                #     n = (det[:, -1] == c).sum()  # detections per class
+                #     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
+                
+                # Write results
+                for *xyxy, conf, cls in reversed(det):
+                    # print(f"{int(cls)} {names[int(cls)]} {torch.tensor(xyxy).view(1, 4)[0].tolist()} {conf}")
+                    coor = torch.tensor(xyxy).view(1, 4)[0].tolist()
+                    box={}
+                    box["xmin"]= coor[0]
+                    box["ymin"]= coor[1]
+                    box["xmax"]= coor[2]
+                    box["ymax"]= coor[3]
+                    box["confidence"]= round(float(conf),5)
+                    box["class"]= int(cls)
+                    box["name"]= names[int(cls)]
+
+                    boxes.append(box)
+    return boxes
+
 def auto_labeling():
     global final, ignore, img_box, cases
     total_num=0
@@ -125,11 +212,11 @@ def auto_labeling():
             image_list = os.listdir(image_folder)
             for image_file in image_list:
                 num+=1
-                image = Image.open(image_folder+image_file)
-
-                # YOLOv5 model
-                result = model(image, size=640).pandas().xyxy[0].to_dict(orient="records")
-
+                # image = Image.open(image_folder+image_file)
+                image_path = image_folder+image_file
+                image = Image.open(image_path)
+                
+                result = inference(image_path)
                 # print(result)
                 # Format is as follows:
                 # [{"xmin":57.0689697266,"ymin":391.7705993652,"xmax":241.3835449219,"ymax":905.7978515625,"confidence":0.8689641356,"class":0.0,"name":"person"},
@@ -138,7 +225,7 @@ def auto_labeling():
                 # {"xmin":4.2053861618,"ymin":234.4476776123,"xmax":803.7391357422,"ymax":750.0233764648,"confidence":0.6580058336,"class":5.0,"name":"bus"},
                 # {"xmin":0.0,"ymin":550.5960083008,"xmax":76.6811904907,"ymax":878.669921875,"confidence":0.4505961835,"class":0.0,"name":"person"}]
 
-                gts = []
+                gts = []  # 각 원소는 [(int)라벨, xc, yc, w, h] 임
                 original_txt = open(label_folder+image_file[:image_file.find(".")]+".txt", 'r')
                 originals = original_txt.readlines()
                 for line in originals:
@@ -212,17 +299,17 @@ def auto_labeling():
                                     break
                                 elif ans=='n':    
                                     is_addbox = 0
-                                    print(f"Bbox overlap Manually ignored: {name} \ton GT: {final[gt[0]]}\tconf={confidence}")
+                                    print(f"Bbox overlap Manually ignored: GT: {final[gt[0]]}\treject {name} \tconf={confidence}")
                                     break
                                 elif ans=='replace':
                                     is_addbox = 0
-                                    print(f"Bbox overlap Manual/Auto replaced to: {name} \tfrom: {final[gt[0]]}\tconf={confidence}")
+                                    print(f"Bbox overlap Manual/Auto replaced from: {final[gt[0]]}\tto: {name} \tconf={confidence}")
                                     gt[0]=class_num
                                     break
                                 elif ans=='purge':
                                     gts.remove(gt)
                                     is_addbox = 0
-                                    print(f"Bbox overlap Manually purged both: {name} \tand GT: {final[gt[0]]}\tconf={confidence}")
+                                    print(f"Bbox overlap Manually purged both: and GT: {final[gt[0]]}\tand {name} \tconf={confidence}")
                                     break
                                 else:
                                     print("Wrong answer, do it again")
@@ -260,7 +347,7 @@ def auto_labeling():
                             
 
                     if is_addbox:
-                        print(f"({num}/{total_num}) %-32s AutoLabeling new:\t{name}\tconf={confidence}"%image_file)
+                        print(f"({num}/{total_num}) {type_}/%-32s AutoLabeling new:\t{name}\tconf={confidence}"%image_file)
                         if(name=="tree"):  # Special case
                             print("WARNING :: Tree conflict case is not deployed yet...")
                             exit()
@@ -282,7 +369,7 @@ def auto_labeling():
                                 added[name]+=1
                             img_box[1]+=1
                                     
-                with open(pl_dir+type_+'/labels/'+image_file[:image_file.find(".")]+'.txt','w') as t:
+                with open(cb_dir+type_+'/labels/'+image_file[:image_file.find(".")]+'.txt','w') as t:
                     for nodes in gts:
                         for node in nodes:
                             t.write(str(node)+' ')
@@ -306,8 +393,8 @@ def autolabel_yaml_writer():
     add_info.append(new_add_info)
 
     nc = len(final)
-    with open(pl_dir+"/data.yaml", 'w') as f:
-        f.write("path: "+pl_dir+"\ntrain: train/images\nval: val/images\n")
+    with open(cb_dir+"/data.yaml", 'w') as f:
+        f.write("path: "+cb_dir+"\ntrain: train/images\nval: val/images\n")
         f.write("test: test/images\n\nnc: %d\nnames: ["%nc)
         
         for i in range(nc):
@@ -357,17 +444,17 @@ def data_init():
         add_info = origin_data_stat['Auto labels']
 
 def main():
-    if not os.path.exists(pl_dir):
+    if not os.path.exists(cb_dir):
         print("Copying images from src folder...")
         for dir in ['','/train','/val','/test']:
-            os.mkdir(pl_dir+dir)
+            os.mkdir(cb_dir+dir)
         for dir in ['/train/images','/val/images','/test/images']:
             if os.path.exists(target_dir+dir):
-                shutil.copytree(target_dir+dir, pl_dir+dir)
+                shutil.copytree(target_dir+dir, cb_dir+dir)
     
     assigned=False
     for dir in ['/train/labels','/val/labels','/test/labels']:
-        if os.path.exists(pl_dir+dir):
+        if os.path.exists(cb_dir+dir):
             if not assigned:
                 ans = input("기존 오토라벨을 지우고 계속합니다. [y,n] : ")
                 print(ans)
@@ -375,17 +462,17 @@ def main():
                     exit() 
                 else:
                     assigned=True
-            shutil.rmtree(pl_dir+dir)
+            shutil.rmtree(cb_dir+dir)
         if os.path.exists(target_dir+dir):
-            os.mkdir(pl_dir+dir)
+            os.mkdir(cb_dir+dir)
 
     print(f"Your confidence settings: {conf}\n")
     data_init()
     auto_labeling()
     # yaml_dumper()
     autolabel_yaml_writer()
-    if(not os.path.exists(pl_dir+'/test/images')):
-        shutil.rmtree(pl_dir+'/test')
+    if(not os.path.exists(cb_dir+'/test/images')):
+        shutil.rmtree(cb_dir+'/test')
 
     print(f"\n\nFollowing bboxes are added: {added}")
     print(f"Manual confirm INFO:  # Higest Reject, Lowest Confirm\n\t{confirms}")

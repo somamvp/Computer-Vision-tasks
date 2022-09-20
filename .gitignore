@@ -26,8 +26,9 @@
 !class.json
 
 my_yolov5/storage.googleapis.com
-my_yolov5/runs/*
-my_yolov7/runs/*
+runs
+*/runs
+*/wandb
 
 convert2Yolo/images
 convert2Yolo/manifest.txt

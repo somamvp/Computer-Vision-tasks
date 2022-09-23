@@ -148,7 +148,8 @@
 			"brailleblock_line_broken":"Braille_Block",
 			"brailleblock_dot_broken":"Braille_Block",
 			"braille_sign":"NA"
-		}
+		},
+		"Ignore" : {}
 	},
 
 	"Coco":{

@@ -2,12 +2,12 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Barrier_np_old'
+src_dir = '../dataset/Wesee_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
 destination = 'Final'  # 원하는 class mapping 선택
-ratio_blankimage = 0.2  # Sustain image without any bounding box randomly (0~1)
+ratio_blankimage = 1  # Sustain image without any bounding box randomly (0~1)
 size_threshold = True
 tiny_cutoff = 150
 large_cutoff = 300000

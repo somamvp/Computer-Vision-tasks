@@ -1,7 +1,7 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/Barrier_np/train/'
+src_dir = '../dataset/Dobo_np/train/'
 find_all = False
 show_others = True
 data_name='Final'
@@ -19,14 +19,14 @@ wanted = {
 # '0':"Zebra_Cross",
 # '1':"R_Signal",
 # '2':"G_Signal",
-'3':"Braille_Block",
+# '3':"Braille_Block",
 # '4':"person",
 # '5':"dog",
 # '6':"tree",
 # '7':"car",
 # '8':"bus",
 # '9':"truck",
-# '10':"motorcycle",
+'10':"motorcycle",
 # '11':"bicycle",
 # '12':"train",
 # '13':"wheelchair",

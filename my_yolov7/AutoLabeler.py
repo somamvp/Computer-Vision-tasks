@@ -1,22 +1,25 @@
 #######################################
 # src = 'Wesee_sample_parsed'
-src_pt = 'wesee7_ind4.pt'
-target = 'Barrier_np'
+src_pt = 'barrier7_fin.pt'
+target = 'Dobo_np'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
+
+hard_negative_collect = True
+auto_reject = True       # high_iou를 전부 reject함
 
 iou = 0.3 #보다 높고 클래스가 같으면 무시
 iou_warning = 0.5 #보다 높으면 사용자 직접확인
 conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 보수적으로 잡기
-    "default":0.6,
-    "Zebra_Cross":0.6,
+    "default":1,
+    "Zebra_Cross":0.52,
     "R_Signal":0.4,
     "G_Signal":0.4,
-    # "Braille_Block":0.7,
+    "Braille_Block":0.48,
     # "person":,
     # "dog":,
     # "tree":,
-    # "car":,
+    # "car":1,
     # "bus":,
     # "truck":,
     # "motorcycle":,
@@ -26,8 +29,8 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
     # "stroller":,
     # "kickboard":,
     # "bollard":,
-    # "manhole":,
-    # "labacon":,
+    "manhole":0.38,
+    "labacon":0.36,
     # "bench":,
     # "barricade":,
     # "pot":,
@@ -69,6 +72,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"using devide {DEVICE}")
 
 ##### 모델 불러오기 #####
+# 여기선 이미지, 텍스트 저장이 작동하지 않음
 opt = easydict.EasyDict({'agnostic_nms':False, 'augment':True, 'classes':None, 'conf_thres':0.25, 'device':'', 
                             'exist_ok':False, 'img_size':640, 'iou_thres':0.45, 'name':'exp',
                             'no_trace':False, 'nosave':False, 'project':'runs/detect', 'save_conf':True, 'save_txt':True, 'source':'',
@@ -136,6 +140,7 @@ def draw_box(feature, coor, text, color):
     feature.rectangle((coor[0], coor[1]-text_shift, coor[0] + bbox[2], coor[1]), fill=color)
     feature.text((coor[0],coor[1]-text_shift), text, (255,255,255), font=font)
 
+# 수동으로 판단한 내용을 confirm 객체에 저장
 def add_confirm(name, ans, conf):
     if(name not in confirms.keys()):
         confirms[name] = ['NA','NA']
@@ -195,6 +200,9 @@ def inference(image_path):
                     boxes.append(box)
     return boxes
 
+def image_collector(img_path, img_name):
+    shutil.copy(img_path+img_name, '../../dataset/hard_negative/'+img_name)
+
 def auto_labeling():
     global final, ignore, img_box, cases
     total_num=0
@@ -226,19 +234,21 @@ def auto_labeling():
                 # {"xmin":0.0,"ymin":550.5960083008,"xmax":76.6811904907,"ymax":878.669921875,"confidence":0.4505961835,"class":0.0,"name":"person"}]
 
                 gts = []  # 각 원소는 [(int)라벨, xc, yc, w, h] 임
-                original_txt = open(label_folder+image_file[:image_file.find(".")]+".txt", 'r')
-                originals = original_txt.readlines()
-                for line in originals:
-                    tok = list(map(float,line.split()))
-                    if len(tok)!=5:
-                        continue
-                    tok[0] = int(tok[0])
-                    gts.append(tok)
-                # Format is as follows:
-                # [[23, 0.19799479166666664, 0.4273148148148148, 0.20296875, 0.11388888888888889],
-                # [23, 0.038734375, 0.4248796296296296, 0.07642708333333334, 0.11018518518518519],
-                # [23, 0.39765364583333335, 0.43243518518518514, 0.07333854166666663, 0.07290740740740737]]
-                
+                gt_txt = label_folder+image_file[:image_file.find(".")]+".txt"
+                if os.path.exists(gt_txt):
+                    original_txt = open(gt_txt, 'r')
+                    originals = original_txt.readlines()
+                    for line in originals:
+                        tok = list(map(float,line.split()))
+                        if len(tok)!=5:
+                            continue
+                        tok[0] = int(tok[0])
+                        gts.append(tok)
+                    # Format is as follows:
+                    # [[23, 0.19799479166666664, 0.4273148148148148, 0.20296875, 0.11388888888888889],
+                    # [23, 0.038734375, 0.4248796296296296, 0.07642708333333334, 0.11018518518518519],
+                    # [23, 0.39765364583333335, 0.43243518518518514, 0.07333854166666663, 0.07290740740740737]]
+                    
                 for bbox in result:
                     # Too small box
                     if (bbox["xmax"]-bbox["xmin"])*(bbox["ymax"]-bbox["ymin"]) <150:
@@ -277,23 +287,37 @@ def auto_labeling():
 
                         # High IoU Manual Labeling
                         if(this_iou > iou_warning):
-                            if(class_num==gt[0]) and (name!="tree"):
+                            if(class_num==gt[0]):
                                 is_addbox = 0
                                 print(f"({num}/{total_num}) %-32s High IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
-                            if confidence<=0.8 or this_iou<=0.8:
+                            
+                            rule_replace = (this_iou>0.8 and confidence>0.8) or (this_iou>iou_warning and name=='labacon' and (final[gt[0]]=='movable_signage' or final[gt[0]]=='bollard'))
+                            rule_reject = this_iou>iou_warning and name=='labacon' and (final[gt[0]]=='fire_hydrant' or final[gt[0]]=='barricade')
+                            
+                            if not (rule_replace or rule_reject or auto_reject):
                                 draw = ImageDraw.Draw(image)
                                 draw_box(draw, gt_box, final[int(gt[0])],'red')
                                 draw_box(draw, predict_box, name,'blue')
                                 image.show()
+                                
                             while(True):
-                                if confidence>0.8 and this_iou>0.8:
-                                    print(f"{image_file}: High-conf Automatical replace box(blue) {name} over GT {final[gt[0]]}")
+                                if rule_replace:
+                                    print(f"{image_file}: High-conf Rule base replace box {name} over GT {final[gt[0]]}")
                                     ans='replace'
+                                elif rule_reject:
+                                    print(f"{image_file}: High-conf Rule base rejected box {name} on GT {final[gt[0]]}")
+                                    ans='n'
+
+                                elif auto_reject:
+                                    print(f"{image_file}: Auto rejecting & Hard Negative collecting.. {name} over GT {final[gt[0]]}, conf = {confidence}")
+                                    if hard_negative_collect:
+                                        image_collector(image_path, image_file)
+                                    ans='n'
                                 else:
                                     ans = input(f"{image_file}: Confirm overlap box(blue) {name} over GT {final[gt[0]]}?: [y,n,replace,purge] > ")
                                     print(f"{ans} \n\t\t\t\t\t",end='')
-                                
+                                    
                                 if ans=='y':
                                     is_addbox = 1
                                     break
@@ -309,17 +333,17 @@ def auto_labeling():
                                 elif ans=='purge':
                                     gts.remove(gt)
                                     is_addbox = 0
-                                    print(f"Bbox overlap Manually purged both: and GT: {final[gt[0]]}\tand {name} \tconf={confidence}")
+                                    print(f"Bbox overlap Manually purged both GT: {final[gt[0]]}\tand {name} \tconf={confidence}")
                                     break
                                 else:
-                                    print("Wrong answer, do it again")
+                                    print("Wrong input, select again")
 
                             add_confirm(name, ans, confidence)
                             break
 
                         # Midium IoU
                         elif(this_iou > iou):
-                            if(class_num==gt[0]) and (name!="tree"):
+                            if(class_num==gt[0]):
                                 is_addbox = 0
                                 print(f"({num}/{total_num}) %-32s Medium IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
@@ -348,27 +372,24 @@ def auto_labeling():
 
                     if is_addbox:
                         print(f"({num}/{total_num}) {type_}/%-32s AutoLabeling new:\t{name}\tconf={confidence}"%image_file)
-                        if(name=="tree"):  # Special case
-                            print("WARNING :: Tree conflict case is not deployed yet...")
-                            exit()
-                        else:  # Normal case
-                            # print(f"Normally adding new box: {name}")
-                            xc = (bbox["xmax"]+bbox["xmin"])/2/img_size[0]
-                            yc = (bbox["ymax"]+bbox["ymin"])/2/img_size[1]
-                            w = (bbox["xmax"]-bbox["xmin"])/img_size[0]
-                            h = (bbox["ymax"]-bbox["ymin"])/img_size[1]
-                            new_box=[class_num, xc, yc, w, h]
-                            gts.append(new_box)
-                            if cases[name]=='Invalid':
-                                cases[name]=1
-                            else:
-                                cases[name]+=1
-                            if not name in added.keys():
-                                added[name]=1
-                            else:
-                                added[name]+=1
-                            img_box[1]+=1
-                                    
+                    
+                        # print(f"Normally adding new box: {name}")
+                        xc = (bbox["xmax"]+bbox["xmin"])/2/img_size[0]
+                        yc = (bbox["ymax"]+bbox["ymin"])/2/img_size[1]
+                        w = (bbox["xmax"]-bbox["xmin"])/img_size[0]
+                        h = (bbox["ymax"]-bbox["ymin"])/img_size[1]
+                        new_box=[class_num, xc, yc, w, h]
+                        gts.append(new_box)
+                        if cases[name]=='Invalid':
+                            cases[name]=1
+                        else:
+                            cases[name]+=1
+                        if not name in added.keys():
+                            added[name]=1
+                        else:
+                            added[name]+=1
+                        img_box[1]+=1
+                                
                 with open(cb_dir+type_+'/labels/'+image_file[:image_file.find(".")]+'.txt','w') as t:
                     for nodes in gts:
                         for node in nodes:
@@ -394,8 +415,8 @@ def autolabel_yaml_writer():
 
     nc = len(final)
     with open(cb_dir+"/data.yaml", 'w') as f:
-        f.write("path: "+cb_dir+"\ntrain: train/images\nval: val/images\n")
-        f.write("test: test/images\n\nnc: %d\nnames: ["%nc)
+        f.write(f"train: ../{cb_dir}/train/images\nval: ../{cb_dir}/val/images\n")
+        f.write(f"test: ../{cb_dir}/test/images\n\nnc: {nc}\nnames: [")
         
         for i in range(nc):
             f.write(f"{final[i]}")
@@ -424,8 +445,8 @@ def data_init():
         data_name = 'Dobo'
     elif("chair" in src_pt.lower()):
         data_name = 'Chair'
-    elif("coco" in src_pt.lower()):
-        data_name = 'Coco'
+    elif("barrier" in src_pt.lower()):
+        data_name = 'Barrier'
     else:
         print("Dataset type auto detect failed. Exiting...")
         exit()
@@ -439,7 +460,11 @@ def data_init():
     img_box[1] = origin_data_stat['Total Bbox']
     img_box[2] = origin_data_stat['Too small boxes ignored']
     img_box[3] = origin_data_stat['Too large boxes ignored']
+    
     cases = origin_data_stat['Bbox distribution']
+    for name in final:
+        if name not in cases.keys():
+            cases[name] = 0
     if 'Auto labels' in origin_data_stat.keys():
         add_info = origin_data_stat['Auto labels']
 
@@ -466,7 +491,8 @@ def main():
         if os.path.exists(target_dir+dir):
             os.mkdir(cb_dir+dir)
 
-    print(f"Your confidence settings: {conf}\n")
+    print(f"Your confidence settings: {conf}")
+    print(f"Source dataset : {target}, Using model: {src_pt}\n")
     data_init()
     auto_labeling()
     # yaml_dumper()

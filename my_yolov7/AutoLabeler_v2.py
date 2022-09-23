@@ -1,7 +1,13 @@
-#######################################
+
+# 현재 작동되지 않는 상태!!!!!!!!!!!!!!!!!!!
+########################################
+#              v2 변경사항              #
+#    추론 작업이 batch job으로 실행됨     #
+########################################
+
 # src = 'Wesee_sample_parsed'
 src_pt = 'barrier7_fin.pt'
-target = 'Dobo_np'
+target = 'Chair_np'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 
@@ -157,6 +163,7 @@ def add_confirm(name, ans, conf):
 
 def inference(image_path):
     dataset = LoadImages(image_path, img_size=imgsz, stride=stride)
+    results={}
                 
     # YOLOv7 model
     for path, img, im0s, vid_cap in dataset:
@@ -172,7 +179,9 @@ def inference(image_path):
         pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
 
         for i, det in enumerate(pred):  # detections per image
-            s, im0, frame = '', im0s, getattr(dataset, 'frame', 0)
+            p, s, im0, frame = path, '', im0s, getattr(dataset, 'frame', 0)
+
+            p = Path(p)
             # s += '%gx%g ' % img.shape[2:]  # print string
             # gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             if len(det):
@@ -198,7 +207,8 @@ def inference(image_path):
                     box["name"]= names[int(cls)]
 
                     boxes.append(box)
-    return boxes
+            results[p] = boxes
+        return results
 
 def image_collector(img_path, img_name):
     shutil.copy(img_path+img_name, '../../dataset/hard_negative/'+img_name)
@@ -217,14 +227,19 @@ def auto_labeling():
         image_folder = target_dir+type_+'/images/'
         label_folder = target_dir+type_+'/labels/'
         if os.path.exists(image_folder):
-            image_list = os.listdir(image_folder)
+            # image_list = os.listdir(image_folder)
+            result = inference(image_folder)
+            print(result)
+            exit()
+
+
+
             for image_file in image_list:
                 num+=1
-                # image = Image.open(image_folder+image_file)
                 image_path = image_folder+image_file
                 image = Image.open(image_path)
                 
-                result = inference(image_path)
+                
                 # print(result)
                 # Format is as follows:
                 # [{"xmin":57.0689697266,"ymin":391.7705993652,"xmax":241.3835449219,"ymax":905.7978515625,"confidence":0.8689641356,"class":0.0,"name":"person"},

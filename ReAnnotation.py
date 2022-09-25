@@ -2,7 +2,7 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Wesee_np'
+src_dir = '../dataset/Dobo-braille_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
@@ -11,6 +11,7 @@ ratio_blankimage = 1  # Sustain image without any bounding box randomly (0~1)
 size_threshold = True
 tiny_cutoff = 150
 large_cutoff = 300000
+ar_limit = 8
 img_size = [640, 360]
 
 #######################################################################
@@ -38,16 +39,13 @@ img_box=[0,0,0,0,0]   # Number of total [images, bboxes, tiny, large, blank_ripp
 def make_mapping():
     cnt=0
     for probe in list(src_class.keys()):
-        if probe not in to_unified_class.keys():
-            convert = 'NA'
-        else:
+        convert = probe
+        if probe in to_unified_class.keys():
             convert = to_unified_class[probe]
+            
         if convert in target_class.keys():
             mapping[src_class[probe]] = target_class[convert]
             cases[convert] = 0
-        else:
-            if(convert=="NA"):
-                continue
 
 def reannotation():
     global src_dir, final
@@ -77,10 +75,11 @@ def reannotation():
                         continue
                     if(size_threshold):
                         area = float(bbox[3])*float(bbox[4])*img_size[0]*img_size[1]
-                        if(area<tiny_cutoff):  # 사이즈 limit
+                        aspect_ratio = float(bbox[4])/float(bbox[3])
+                        if(area < tiny_cutoff):  # 사이즈 limit
                             img_box[2]+=1
                             continue
-                        elif(area>large_cutoff):  # 사이즈 limit
+                        elif(aspect_ratio > ar_limit or area > large_cutoff):  # 사이즈 limit
                             img_box[3]+=1
                             continue
 
@@ -129,7 +128,7 @@ def yaml_writer_ReAnnotation():
         f.write("\n# Dataset statistics: \nTotal imgs: %d\nTrain-Val-Test: [%d,%d,%d]\n"%(img_box[0],
             train_val_test[0],train_val_test[1],train_val_test[2]))
         f.write("Blank images ignored: %d\n\n"%img_box[4])
-        f.write("Too small boxes ignored: %d\nToo large boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
+        f.write("Too small boxes ignored: %d\nToo large/odd boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(len_):
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
@@ -160,7 +159,7 @@ def data_init(data_name):
     final = class_json[destination]["Original"]
     
     for name in final:
-        cases[name] = 'Invalid'
+        cases[name] = 0
 
 def main():
     if("wesee" in src_dir.lower()):
@@ -205,6 +204,9 @@ def main():
 
     make_mapping()
     reannotation()
+    for name in final:
+        if cases[name] == 0:
+            cases[name] = 'Invalid' 
     yaml_writer_ReAnnotation()
     print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
         train_val_test[1], train_val_test[2]))

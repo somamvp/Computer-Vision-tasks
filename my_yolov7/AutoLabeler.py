@@ -1,12 +1,12 @@
 #######################################
-# src = 'Wesee_sample_parsed'
-src_pt = 'barrier7_fin.pt'
-target = 'Dobo_np'
+src_pt = 'chair7_fin.pt'
+target = 'Dobo-braille_np'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 
 is_hard_negative_collect = True
 is_auto_reject = True       # high_iou를 전부 reject함
+AR_limit = 8
 
 iou = 0.3 #보다 높고 클래스가 같으면 무시
 iou_warning = 0.5 #보다 높으면 사용자 직접확인
@@ -15,30 +15,30 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
     "Zebra_Cross":0.52,
     "R_Signal":0.4,
     "G_Signal":0.4,
-    "Braille_Block":0.48,
+    # "Braille_Block":0.48,
     # "person":,
     # "dog":,
     # "tree":,
     # "car":1,
     # "bus":,
-    # "truck":,
-    # "motorcycle":,
+    "truck":0.5,
+    "motorcycle":0.5,
     # "bicycle":,
-    # "train":,
+    # "none":,
     # "wheelchair":,
-    # "stroller":,
+    "stroller":0.27,
     # "kickboard":,
     # "bollard":,
     "manhole":0.38,
     "labacon":0.36,
     # "bench":,
     # "barricade":,
-    # "pot":,
-    # "table":,
-    # "chair":,
-    # "fire_hydrant":,
-    # "movable_signage":,
-    # "bus_stop":
+    "pot":0.5,
+    "table":0.4,
+    "chair":0.4,
+    "fire_hydrant":0.55,
+    "movable_signage":0.6,
+    "bus_stop":0.5
 }
 
 img_size= [640, 360]
@@ -201,7 +201,8 @@ def inference(image_path):
     return boxes
 
 def image_collector(img_path, img_name):
-    shutil.copy(img_path+img_name, '../../dataset/hard_negative/'+img_name)
+    global data_name
+    shutil.copy(img_path+img_name, f'../../dataset/hard_negative/{data_name}/'+img_name)
 
 def auto_labeling():
     global final, ignore, img_box, cases
@@ -253,6 +254,9 @@ def auto_labeling():
                     # Too small box
                     if (bbox["xmax"]-bbox["xmin"])*(bbox["ymax"]-bbox["ymin"]) <150:
                         continue
+                    aspect_ratio = (bbox["ymax"]-bbox["ymin"])/(bbox["xmax"]-bbox["xmin"])
+                    if (aspect_ratio > AR_limit and bbox["name"] != "Braille"):
+                        continue
 
                     is_addbox=-1  # 이 값이 0으로 바뀌면 해당 박스는 추가하지 않는것이고, 1로 바뀌면 추가하는 것
                     name = bbox['name']
@@ -292,8 +296,10 @@ def auto_labeling():
                                 print(f"({num}/{total_num}) %-32s High IoU Bbox overlap ignored: {name}\tconf={confidence}"%image_file)
                                 break
                             
-                            rule_replace = (this_iou>0.8 and confidence>0.8) or (this_iou>iou_warning and name=='labacon' and (final[gt[0]]=='movable_signage' or final[gt[0]]=='bollard'))
-                            rule_reject = this_iou>iou_warning and name=='labacon' and (final[gt[0]]=='fire_hydrant' or final[gt[0]]=='barricade')
+                            rule_reject = this_iou>iou_warning and name=='labacon' and (final[gt[0]]=='fire_hydrant' or final[gt[0]]=='barricade')\
+                                    or (this_iou>iou_warning and (name=='movable_signage' or name=="bollard") and (final[gt[0]]=='labacon'))
+                            rule_replace = (this_iou>0.8 and confidence>0.8) or (this_iou>iou_warning and name=='labacon' and (final[gt[0]]=='movable_signage' or final[gt[0]]=='bollard'))\
+                                    or (this_iou>iou_warning and (name=='fire_hydrant') and (final[gt[0]]=='bollard'))
                             
                             if not (rule_replace or rule_reject or is_auto_reject):
                                 draw = ImageDraw.Draw(image)
@@ -302,13 +308,12 @@ def auto_labeling():
                                 image.show()
                                 
                             while(True):
-                                if rule_replace:
-                                    print(f"{image_file}: High-conf Rule base replace box {name} over GT {final[gt[0]]}")
-                                    ans='replace'
-                                elif rule_reject:
+                                if rule_reject:
                                     print(f"{image_file}: High-conf Rule base rejected box {name} on GT {final[gt[0]]}")
                                     ans='n'
-
+                                elif rule_replace:
+                                    print(f"{image_file}: High-conf Rule base replace box {name} over GT {final[gt[0]]}")
+                                    ans='replace'
                                 elif is_auto_reject:
                                     print(f"{image_file}: Auto rejecting & Hard Negative collecting.. {name} over GT {final[gt[0]]}, conf = {confidence}")
                                     if is_hard_negative_collect:
@@ -437,7 +442,7 @@ def autolabel_yaml_writer():
         f.close()
 
 def data_init():
-    global final, ignore, origin_data_stat, cases, img_box, add_info
+    global final, ignore, origin_data_stat, cases, img_box, add_info, data_name
 
     if("wesee" in src_pt.lower()):
         data_name = 'Wesee'

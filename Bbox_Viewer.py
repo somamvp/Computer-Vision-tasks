@@ -1,7 +1,7 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/Dobo_np/train/'
+src_dir = '../dataset/Dobo-braille_np/test/'
 find_all = False
 show_others = True
 data_name='Final'
@@ -26,12 +26,12 @@ wanted = {
 # '7':"car",
 # '8':"bus",
 # '9':"truck",
-'10':"motorcycle",
+# '10':"motorcycle",
 # '11':"bicycle",
 # '12':"train",
 # '13':"wheelchair",
 # '14':"stroller",
-# '15':"kickboard",
+'15':"kickboard",
 # '16':"bollard",
 # '17':"manhole",
 # '18':"labacon",
@@ -42,7 +42,7 @@ wanted = {
 # '23':"chair",
 # '24':"fire_hydrant",
 # '25':"movable_signage",
-# '26':"bus_stop",
+'26':"bus_stop",
 # ' ':"wrong approach"
 }
 

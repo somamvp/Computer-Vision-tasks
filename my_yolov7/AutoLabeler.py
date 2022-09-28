@@ -1,6 +1,6 @@
 #######################################
-src_pt = 'chair7_fin.pt'
-target = 'Dobo-braille_np'
+src_pt = 'wesee7_fin.pt'
+target = 'voyagerExtra'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 
@@ -29,8 +29,8 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
     "stroller":0.27,
     # "kickboard":,
     # "bollard":,
-    "manhole":0.38,
-    "labacon":0.36,
+    "manhole":0.4,
+    "labacon":0.46,
     # "bench":,
     # "barricade":,
     "pot":0.5,
@@ -202,6 +202,8 @@ def inference(image_path):
 
 def image_collector(img_path, img_name):
     global data_name
+    if not os.path.exists(f'../../dataset/hard_negative/{data_name}/'):
+        os.mkdir(f'../../dataset/hard_negative/{data_name}/')
     shutil.copy(img_path+img_name, f'../../dataset/hard_negative/{data_name}/'+img_name)
 
 def auto_labeling():
@@ -431,7 +433,7 @@ def autolabel_yaml_writer():
                 f.write(']')
         f.write("\n# Dataset statistics: \nTotal imgs: %d\nTrain-Val-Test: [%d,%d,%d]\n\n"%(img_box[0],
             train_val_test[0],train_val_test[1],train_val_test[2]))
-        f.write("Too small boxes ignored: %d\nToo large boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
+        f.write("Too small boxes ignored: %d\nToo large/odd boxes ignored: %d\n\n"%(img_box[2],img_box[3]))
         f.write("Total Bbox: %d\nBbox distribution:\n"%(img_box[1]))
         for i in range(nc):
             f.write("    %s: %s\n"%(final[i],cases[final[i]]))
@@ -443,28 +445,16 @@ def autolabel_yaml_writer():
 
 def data_init():
     global final, ignore, origin_data_stat, cases, img_box, add_info, data_name
+    data_name = src_pt[:src_pt.find('7')]
 
-    if("wesee" in src_pt.lower()):
-        data_name = 'Wesee'
-    elif("dobo" in src_pt.lower()):
-        data_name = 'Dobo'
-    elif("chair" in src_pt.lower()):
-        data_name = 'Chair'
-    elif("barrier" in src_pt.lower()):
-        data_name = 'Barrier'
-    else:
-        print("Dataset type auto detect failed. Exiting...")
-        exit()
-    # src_yaml = yaml.safe_load(open(src_dir +'/data_old.yaml', encoding='UTF-8'))
     class_json = json.load(open('../class.json'))
     final = class_json['Final']['Original']
-    ignore = class_json[data_name]['Ignore']
     class_book = class_json['Final']['Label']
     origin_data_stat = yaml.safe_load(open(target_dir+'/data.yaml', encoding='UTF-8'))
     img_box[0] = origin_data_stat['Total imgs']
     img_box[1] = origin_data_stat['Total Bbox']
     img_box[2] = origin_data_stat['Too small boxes ignored']
-    img_box[3] = origin_data_stat['Too large boxes ignored']
+    img_box[3] = origin_data_stat['Too large/odd boxes ignored']
     
     cases = origin_data_stat['Bbox distribution']
     for name in final:

@@ -1,7 +1,7 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/Dobo-braille_np/test/'
+src_dir = '../dataset/Chair_np/train/'
 find_all = False
 show_others = True
 data_name='Final'
@@ -54,7 +54,7 @@ def main():
     label_list = os.listdir(label_path)
     # print(len(label_list))
     font_size = 15
-    font = ImageFont.truetype("my_yolov5/utils/arial_bold.ttf", font_size)
+    font = ImageFont.truetype("arial_bold.ttf", font_size)
 
     for label in label_list:
         detected=find_all

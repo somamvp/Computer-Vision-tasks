@@ -1,6 +1,6 @@
 #######################################
-src_pt = 'wesee7_fin.pt'
-target = 'voyagerExtra'
+src_pt = 'barrier7_fin.pt'
+target = 'voyagerExtra-wesee7_fin'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 
@@ -15,7 +15,7 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
     "Zebra_Cross":0.52,
     "R_Signal":0.4,
     "G_Signal":0.4,
-    # "Braille_Block":0.48,
+    "Braille_Block":0.48,
     # "person":,
     # "dog":,
     # "tree":,
@@ -251,7 +251,6 @@ def auto_labeling():
                     # [[23, 0.19799479166666664, 0.4273148148148148, 0.20296875, 0.11388888888888889],
                     # [23, 0.038734375, 0.4248796296296296, 0.07642708333333334, 0.11018518518518519],
                     # [23, 0.39765364583333335, 0.43243518518518514, 0.07333854166666663, 0.07290740740740737]]
-                    
                 for bbox in result:
                     # Too small box
                     if (bbox["xmax"]-bbox["xmin"])*(bbox["ymax"]-bbox["ymin"]) <150:
@@ -279,7 +278,6 @@ def auto_labeling():
                         else:
                             print("Argument 'conf' Incorrect error. Exiting...")
                             exit()
-
 
                     for gt in gts:
                         predict_box = [bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]]
@@ -324,7 +322,6 @@ def auto_labeling():
                                 else:
                                     ans = input(f"{image_file}: Confirm overlap box(blue) {name} over GT {final[gt[0]]}?: [y,n,replace,purge] > ")
                                     print(f"{ans} \n\t\t\t\t\t",end='')
-                                    
                                 if ans=='y':
                                     is_addbox = 1
                                     break
@@ -422,8 +419,8 @@ def autolabel_yaml_writer():
 
     nc = len(final)
     with open(cb_dir+"/data.yaml", 'w') as f:
-        f.write(f"train: ../{cb_dir}/train/images\nval: ../{cb_dir}/val/images\n")
-        f.write(f"test: ../{cb_dir}/test/images\n\nnc: {nc}\nnames: [")
+        f.write(f"train: {cb_dir}/train/images\nval: ../{cb_dir}/val/images\n")
+        f.write(f"test: {cb_dir}/test/images\n\nnc: {nc}\nnames: [")
         
         for i in range(nc):
             f.write(f"{final[i]}")

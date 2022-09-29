@@ -1,0 +1,43 @@
+train: ../../dataset/Chair2_np/train/images
+val: ../../dataset/Chair2_np/val/images
+test: ../../dataset/Chair2_np/test/images
+
+nc: 27
+names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'NA', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
+# Dataset statistics: 
+Total imgs: 26845
+Train-Val-Test: [20071,1808,1264]
+Blank images ignored: 3702
+
+Too small boxes ignored: 6177
+Too large boxes ignored: 0
+
+Total Bbox: 50286
+Bbox distribution:
+    Zebra_Cross: Invalid
+    R_Signal: Invalid
+    G_Signal: Invalid
+    Braille_Block: 3419
+    person: 11630
+    dog: Invalid
+    tree: 4280
+    car: 3795
+    bus: Invalid
+    truck: Invalid
+    motorcycle: Invalid
+    bicycle: 817
+    NA: Invalid
+    wheelchair: Invalid
+    stroller: Invalid
+    kickboard: 637
+    bollard: 4256
+    manhole: 3219
+    labacon: 2077
+    bench: 3540
+    barricade: 12616
+    pot: Invalid
+    table: Invalid
+    chair: Invalid
+    fire_hydrant: Invalid
+    movable_signage: Invalid
+    bus_stop: Invalid

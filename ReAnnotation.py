@@ -2,7 +2,7 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Dobo-braille_np'
+src_dir = '../dataset/Chair2_np'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
@@ -75,6 +75,8 @@ def reannotation():
                         continue
                     if(size_threshold):
                         area = float(bbox[3])*float(bbox[4])*img_size[0]*img_size[1]
+                        if(float(bbox[3])==0 or float(bbox[4])==0):
+                            continue
                         aspect_ratio = float(bbox[4])/float(bbox[3])
                         if(area < tiny_cutoff):  # 사이즈 limit
                             img_box[2]+=1

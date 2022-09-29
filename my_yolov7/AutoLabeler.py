@@ -1,6 +1,6 @@
 #######################################
-src_pt = 'barrier7_fin.pt'
-target = 'voyagerExtra-wesee7_fin'
+src_pt = 'dobo7_fin.pt'
+target = 'Chair2_np'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 
@@ -16,28 +16,28 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
     "R_Signal":0.4,
     "G_Signal":0.4,
     "Braille_Block":0.48,
-    # "person":,
-    # "dog":,
-    # "tree":,
-    # "car":1,
-    # "bus":,
-    "truck":0.5,
-    "motorcycle":0.5,
-    # "bicycle":,
+    "person":0.7,
+    "dog":0.5,
+    "tree":0.38,
+    "car":0.65,
+    "bus":0.6,
+    "truck":0.55,
+    "motorcycle":0.6,
+    "bicycle":0.6,
     # "none":,
-    # "wheelchair":,
-    "stroller":0.27,
-    # "kickboard":,
-    # "bollard":,
-    "manhole":0.4,
+    "wheelchair":0.25,
+    "stroller":0.25,
+    "kickboard":0.25,
+    "bollard":0.55,
+    "manhole":0.45,
     "labacon":0.46,
-    # "bench":,
+    "bench":0.4,
     # "barricade":,
     "pot":0.5,
     "table":0.4,
     "chair":0.4,
     "fire_hydrant":0.55,
-    "movable_signage":0.6,
+    "movable_signage":0.5,
     "bus_stop":0.5
 }
 

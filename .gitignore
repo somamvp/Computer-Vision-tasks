@@ -21,6 +21,10 @@
 *.json
 *.cfg
 *.pt
+*.txt
+
+!*requirement*
+
 !my_yolov5/setup.cfg
 !my_yolov5/cfg/yolov3*.cfg
 !class.json

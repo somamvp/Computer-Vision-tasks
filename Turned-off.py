@@ -1,5 +1,5 @@
 from PIL import Image
-import os
+import os, shutil
 
 src_dir = '../dataset/Wesee_sample_parsed'
 target_dir = src_dir + '_truned-off'
@@ -12,16 +12,19 @@ def delete():
 
         for label_file in label_list:
             with open(src_dir+type_+'labels/'+label_file) as label:
-                gts = label.readlines()
-                for gt in gts:
-                    if gt[0]=='1' or gt[0]=='2':
-                        if os.path.exists(src_dir+type_+'images'+label_file[:-4]+'.jpg'):
-                            img = Image.open(src_dir+type_+'images'+label_file[:-4]+'.jpg')
+                lines = label.readlines()
+                for line in lines:
+                    gt = line.split()
+                    if gt[0]=='1' or gt[0]=='2':  #R_Signal or G_Signal
+                        if os.path.exists(src_dir+type_+'images/'+label_file[:-4]+'.jpg'):
+                            img = Image.open(src_dir+type_+'images/'+label_file[:-4]+'.jpg')
                         else:
-                            img = Image.open(src_dir+type_+'images'+label_file[:-4]+'.png')
+                            img = Image.open(src_dir+type_+'images/'+label_file[:-4]+'.png')
                         width = img.size[0]
                         height = img.size[1]
-                        cropped=img.crop((width*gt[0], height*gt[1], width*gt[2], height*gt[3]))
+                        for i in range(0,5):
+                            gt[i] = float(gt[i])
+                        cropped=img.crop((width*gt[1], height*gt[2], width*gt[3], height*gt[4]))
                         cropped.show()
                         ans=input()
 
@@ -53,7 +56,7 @@ def main():
 
     print("Turned-off traffic light will be deleted")
     delete()
-    yaml_writer()
+    # yaml_writer()
     print(f"\n\nG_Signal deleted: {deletion[0]}, R_Signal deleted: {deletion[1]}")
 
 

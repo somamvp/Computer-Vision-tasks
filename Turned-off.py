@@ -1,9 +1,16 @@
 from PIL import Image
-import os, shutil
+import os, shutil, colorsys
 
 src_dir = '../dataset/Wesee_sample_parsed'
 target_dir = src_dir + '_truned-off'
 deletion = [0,0]
+
+def rgb_to_rxv(r,g,b):
+    (h, s, v) = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+    h *= 360
+    s *= 100
+    v *= 100
+    return h,s,v
 
 def delete():
     types = ['/test/','/train/','/val/']
@@ -24,11 +31,19 @@ def delete():
                         height = img.size[1]
                         for i in range(0,5):
                             gt[i] = float(gt[i])
-                        cropped=img.crop((width*gt[1], height*gt[2], width*gt[3], height*gt[4]))
+                        x1 = int(width*(gt[1]-gt[3]/2))+2
+                        x2 = int(width*(gt[1]+gt[3]/2))+3
+                        y1 = int(height*(gt[2]-gt[4]/2))-2
+                        y2 = int(height*(gt[2]+gt[4]/2))-3
+
+                        
+
+                        cropped = img.crop((x1+2,y1+3,x2-2,y2-3))
                         cropped.show()
                         ans=input()
 
-
+                        for x in range(x1, x2):
+                            for y in range(y1, y2):
 
 
 def main():

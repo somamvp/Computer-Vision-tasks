@@ -59,6 +59,12 @@ def detect(save_img=False):
     # Get names and colors
     names = model.module.names if hasattr(model, 'module') else model.names
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in names]
+    
+    # BGR
+    colors[0] = [235,143,67] #Crosswalk
+    colors[1] = [0,0,255] #R_Signal
+    colors[2] = [0,255,0] #G_Signal
+    colors[3] = [0,212,255] #Braille
 
     # Run inference
     if device.type != 'cpu':

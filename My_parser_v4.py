@@ -1,12 +1,12 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-image_process = True
+image_process = False
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 force_classing = True
 
-src_dir = '../dataset/Dobo'
+src_dir = '../dataset/Barrier'
 target_dir = src_dir+'_np'
 
 # Ver4 변경사항 :
@@ -18,7 +18,7 @@ dataset_type = 6
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
 2 = Wesee 신호등 셀렉트스타
-3 = COCO [Not Working now]
+3 = Barrier
 '''
 #######################################################
 
@@ -32,7 +32,6 @@ nc=0
 from PIL import Image
 import os
 import shutil
-import random
 import json
 
 def path_generator(indicator):
@@ -59,13 +58,13 @@ def path_generator(indicator):
         else:
             path = target_dir+'/train'
             dest=0
-    elif data_name=='Dobo':
-        if('KSC' in indicator):
-            path = target_dir+'/val'
-            dest=1
-        elif('MIN' in indicator):
+    elif data_name=='Barrier':
+        if('DC0203' in indicator):
             path = target_dir+'/test'
             dest=2
+        elif('DC020' in indicator):
+            path = target_dir+'/val'
+            dest=1
         else:
             path = target_dir+'/train'
             dest=0
@@ -97,7 +96,7 @@ def yaml_writer():
                 f.write("    %s: Invalid\n"%(class_[i]))
         f.close()
 
-def image_maker(img_dir, image_name, store_dir, store_name):
+def image_maker(img_dir, image_name, store_dir, store_name):  # 기존폴더, 기존이름, 대상폴더, 대상이름
     img = Image.open(img_dir+'/'+image_name)
     img_resize = img.resize((imgsize[0],imgsize[1]))
 
@@ -313,6 +312,8 @@ def parser_2():
 
                             width = float(j["imageWidth"])
                             height = float(j["imageHeight"])
+
+                            # Min, Max가 섞여있는 경우 상정
                             point = j["shapes"][i]["points"]
                             if float(point[0][0])>float(point[1][0]):
                                 xtl = float(point[1][0])
@@ -341,13 +342,93 @@ def parser_2():
     return
 
 def parser_3():
+    global nc
+    for type in ['/Training','/Validation']:
+        fn=0
+        label_folders = os.listdir(src_dir+type)
+        label_folders = [folder for folder in label_folders if ("[라벨]" in folder)]
+        if len(label_folders)==0:
+            continue
+        
+        # 폴더 하나마다 실행
+        for label_folder in label_folders:
+            fn+=1
+            print("Processing %s/ %s ...  (%d/%d)"%(type, label_folder,fn,len(label_folders)))
+
+            label_folder = '/'+label_folder+'/'
+            image_folder = '/[원천]'+label_folder[5:]  # 이미지폴더
+            labels = os.listdir(src_dir+type+label_folder)
+
+            # 하나의 라벨마다 실행
+            for label in labels:
+                l=open(src_dir+type+label_folder+label, 'r', encoding="UTF-8")
+                j = json.load(l)
+
+                path = path_generator(label)
+                train_val_test[path[1]] += 1
+
+                file_name = label.replace(' ','_')[:-5]
+                with open(path[0]+'/labels/'+file_name+'.txt','w') as t:
+                    image_name = j["images"]["file_name"]
+                    image_file = (src_dir+type+image_folder+image_name)
+
+                    # 이미지가 존재하지 않는 경우
+                    if not os.path.exists(image_file):
+                        print(f"Image file {image_name} does not exist!!")
+                        continue
+
+                    # 이미지 사이즈가 1080p가 아닌 경우
+                    if j["images"]["height"]!=1080 or j["images"]["width"]!=1920:
+                        print(f"Images size not match : {image_name}")
+                        continue
+                    
+                    # 이미지 카운트
+                    img_box[0]+=1
+                    
+                    # 하나의 바운딩박스마다 실행
+                    for bbox in j["annotations"]:
+                        class_name = bbox["category_id"]
+                        
+                        # 기존에 없는 클래스명인 경우
+                        if class_name not in list(classes.keys()):
+                            classes[class_name] = nc
+                            nc+=1
+                            cases[class_name]=0
+                        
+                        points = bbox["segmentation"]
+
+                        # 바운딩 박스를 나타내기 위한 점 갯수가 부족
+                        if(len(points) <= 2):
+                            # print(f"Contains less than three points for segmentation : {image_name}, {class_name}")
+                            continue
+
+                        x=[]
+                        y=[]
+                        for point in points:
+                            x.append(point[0])
+                            y.append(point[1])
+                        xtl = min(x)
+                        xbr = max(x)
+                        ytl = min(y)
+                        ybr = max(y)
+
+                        parse = parsing(class_name, xtl, ytl, xbr, ybr, 1920, 1080)
+                        if not parse:
+                            continue
+                        else:
+                            # 바운딩박스 카운트 및 어노테이션 작성
+                            cases[class_name] += 1
+                            img_box[1] += 1
+                            t.write(parse)
+                if(image_process):
+                    image_maker(src_dir+type+image_folder, image_name, path[0]+'/images', image_name.replace(' ','_'))
+
+    # print(classes.keys())
+    # print(nc)
     return
 
-def class_init(dataset):
+def class_init(data_name):
     global nc
-    if(not force_classing):
-        return
-        
     with open('class.json','r',encoding="UTF-8") as class_json:
         forced_class = json.load(class_json)
 
@@ -360,8 +441,8 @@ def class_init(dataset):
 def main():
     global data_name
 
-    if src_dir==target_dir:
-        print("ERROR : 소스 폴더와 타켓 폴더가 같습니다")
+    if src_dir==target_dir or not os.path.exists(src_dir):
+        print("ERROR : 소스 폴더 및 타켓 폴더 지정에러")
         return
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
@@ -389,14 +470,14 @@ def main():
     if os.path.exists(target_dir+'/data_old.yaml'):
         os.remove(target_dir+'/data_old.yaml')
 
-    if("wesee" in src_dir.lower() or "wesee" in target_dir.lower()):
+    if("wesee" in src_dir.lower()):
         data_name = 'Wesee'
-    elif("dobo" in src_dir.lower() or "dobo" in target_dir.lower()):
+    elif("dobo" in src_dir.lower()):
         data_name = 'Dobo'
-    elif("chair" in src_dir.lower() or "chair" in target_dir.lower()):
+    elif("chair" in src_dir.lower()):
         data_name = 'Chair'
-    elif("coco" in src_dir.lower() or "coco" in target_dir.lower()):
-        data_name = 'Coco'
+    elif("barrier" in src_dir.lower()):
+        data_name = 'Barrier'
     else:
         print("Dataset type auto detect failed. Switching to manual")
         if dataset_type==0:
@@ -406,26 +487,26 @@ def main():
         elif dataset_type==2:
             data_name = "Wesee"
         elif dataset_type==3:
-            data_name = "Coco"
+            data_name = "Barrier"
         else:
             print("Wrong dataset type number")
             return
     print(f"Selected dataset_type: {data_name}")
 
-    class_init(data_name)
+    if force_classing:
+        class_init(data_name)
+
     if(data_name=='Dobo'):
         parser_0()
     elif(data_name=='Chair'):
         parser_1()
     elif(data_name=='Wesee'):
         parser_2()
-    elif(data_name=='Coco'):
+    elif(data_name=='Barrier'):
         parser_3()
 
     # Write data.yaml
     yaml_writer()
-    # if train_val_test[2]==0:
-    #     shutil.rmtree(target_dir+'/test')
     print("Processed numbers of dataset = Train: %d, Val: %d, Test: %d"%(train_val_test[0],
         train_val_test[1], train_val_test[2]))
 

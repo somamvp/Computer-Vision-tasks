@@ -1,0 +1,52 @@
+train: ../../dataset/voyagerBasic/train/images
+val: ../../dataset/voyagerBasic/val/images
+test: ../../dataset/voyagerBasic/test/images
+
+nc: 27
+names: [Zebra_Cross, R_Signal, G_Signal, Braille_Block, person, dog, tree, car, bus, truck, motorcycle, bicycle, none, wheelchair, stroller, kickboard, bollard, manhole, labacon, bench, barricade, pot, table, chair, fire_hydrant, movable_signage, bus_stop]
+# Dataset statistics: 
+Total imgs: 80142
+Train-Val-Test: [65605,10974,3563]
+
+Too small boxes ignored: 3736
+Too large boxes ignored: 0
+
+Total Bbox: 76999
+Bbox distribution:
+    Zebra_Cross: 40505
+    R_Signal: 8123
+    G_Signal: 3068
+    Braille_Block: 48503
+    person: Invalid
+    dog: Invalid
+    tree: Invalid
+    car: Invalid
+    bus: Invalid
+    truck: Invalid
+    motorcycle: Invalid
+    bicycle: Invalid
+    none: Invalid
+    wheelchair: Invalid
+    stroller: Invalid
+    kickboard: Invalid
+    bollard: Invalid
+    manhole: Invalid
+    labacon: Invalid
+    bench: Invalid
+    barricade: Invalid
+    pot: Invalid
+    table: Invalid
+    chair: Invalid
+    fire_hydrant: Invalid
+    movable_signage: Invalid
+    bus_stop: Invalid
+
+Auto labels:  # 라벨링 된 순서로 정렬됨  # Higest Reject, Lowest Confirm
+  - weight : wesee7_ind4.pt
+    Bbox_added: {'Zebra_Cross': 3785, 'R_Signal': 291, 'G_Signal': 124}
+    conf_threshold: {'default': 0.6, 'Zebra_Cross': 0.52, 'R_Signal': 0.4, 'G_Signal': 0.4}
+    manual_confirms: {'Zebra_Cross': ['NA', 0.52627]}
+  - weight : barrier7_fin.pt
+    Bbox_added: {'Braille_Block': 12424}
+    conf_threshold: {'default': 1, 'Zebra_Cross': 0.52, 'R_Signal': 0.4, 'G_Signal': 0.4, 'Braille_Block': 0.43, 'manhole': 0.38, 'labacon': 0.36}
+    manual_confirms: {}

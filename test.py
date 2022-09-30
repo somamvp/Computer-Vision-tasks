@@ -1,4 +1,5 @@
-import yaml
+import yaml, cv2
+from PIL import Image
 # j = yaml.safe_load(open("../dataset/Wesee_sample_parsed/data.yaml", encoding='UTF-8'))
 # con ={}
 # con["classes"]=['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'train', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
@@ -15,4 +16,6 @@ conf['a']=[1,2]
 print(type(conf))
 print(type(conf['a']))
 print(type(conf).__name__=='list')
-print(type(conf['a'])==type([]))
+# print(type(conf['a'])==type([]))
+a = 3
+print(f"{type(a) is float}")

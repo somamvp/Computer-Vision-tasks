@@ -1,6 +1,6 @@
 #######################################
-src_pt = 'chair2_fin.pt'
-target = 'Dobo-braille_np'
+src_pt = 'chair2_ind1.pt'
+target = 'voyagerBasic-dobo7_fin'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 

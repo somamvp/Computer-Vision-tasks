@@ -1,6 +1,6 @@
 #######################################
-src_pt = 'dobo7_fin.pt'
-target = 'Chair2_np'
+src_pt = 'chair2_ind1.pt'
+target = 'voyagerBasic-dobo7_fin'
 cb = src_pt[:src_pt.find(".")]
 cb_dir = '../../dataset/'+target+'-'+cb
 
@@ -32,7 +32,7 @@ conf = {  # conf 설정  {클래스이름:[매뉴얼conf, 자동conf]}, 항상 �
     "manhole":0.45,
     "labacon":0.46,
     "bench":0.4,
-    # "barricade":,
+    "barricade":0.55,
     "pot":0.5,
     "table":0.4,
     "chair":0.4,

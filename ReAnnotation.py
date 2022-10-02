@@ -2,7 +2,7 @@
 # Only works for YOLO Format, Labeled by 'class.json'
 ######################################################################
 global src_dir
-src_dir = '../dataset/Chair2_np'
+src_dir = '../dataset/voyagerExtra'
 # 초기 labels가 'labels_old' 폴더로 이동됨
 # 'labels_old'가 이미 있는 경우 'labels'폴더는 바로 삭제됨
 
@@ -15,13 +15,14 @@ ar_limit = 8
 img_size = [640, 360]
 
 #######################################################################
-# 데이터셋이 이제 자동으로 감지되므로 필요없음
-dataset_type = 5
+# 데이터셋이 이제 자동으로 감지됨
+dataset_type = 4
 '''
 0 = Dobo 도보 aihub
 1 = Chair 휠체어 aihub
 2 = Wesee 신호등 셀렉트스타
 3 = Barrier 배리어프리 aihub
+4 = 복합 데이터셋 data.yaml 파일 생성
 '''
 #######################################################################
 
@@ -182,6 +183,8 @@ def main():
             data_name = "Wesee"
         elif dataset_type==3:
             data_name = "Barrier"
+        elif dataset_type==4:
+            data_name = "Final"
         else:
             print("Wrong dataset type number")
             return

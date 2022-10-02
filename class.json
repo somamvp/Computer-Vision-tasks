@@ -36,6 +36,13 @@
 			"fire_hydrant":24,
 			"movable_signage":25,
 			"bus_stop":26
+		},
+		"Mapping" : {
+			"Zebra_Cross":"Zebra_Cross","R_Signal":"R_Signal","G_Signal":"G_Signal","Braille_Block":"Braille_Block","person":"person",
+			"dog":"dog","tree":"tree","car":"car","bus":"bus","truck":"truck","motorcycle":"motorcycle","bicycle":"bicycle",
+			"none":"none","wheelchair":"wheelchair","stroller":"stroller","kickboard":"kickboard","bollard":"bollard","manhole":"manhole",
+			"labacon":"labacon","bench":"bench","barricade":"barricade","pot":"pot","table":"table","chair":"chair","fire_hydrant":"fire_hydrant",
+			"movable_signage":"movable_signage","bus_stop":"bus_stop"
 		}
 	},
 

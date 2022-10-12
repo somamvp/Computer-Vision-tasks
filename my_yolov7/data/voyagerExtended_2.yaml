@@ -2,8 +2,8 @@ train: ../../dataset/voyagerExtended_2/train/images
 val: ../../dataset/voyagerExtended_2/val/images
 test: ../../dataset/voyagerExtended_2/test/images
 
-nc: 4
-names: ['dog', 'wheelchair', 'stroller', 'kickboard']
+nc: 27
+names: ["Zebra_Cross","R_Signal","G_Signal","Braille_Block","person","dog","tree","car","bus","truck","motorcycle","bicycle","none","wheelchair","stroller","kickboard","bollard","manhole","labacon","bench","barricade","pot","table","chair","fire_hydrant","movable_signage","bus_stop"]
 # Dataset statistics: 
 Total imgs: 408715
 Train-Val-Test: [346537,38829,23349]

@@ -1,7 +1,10 @@
 # Reannotate에서 무시된 이미지를 삭제하고 기타 필요없는 파일들은 삭제해 필요한 파일만 남기는 작업 #
+# 에서 원하는 라벨이 있는 데이터만 남기는 작업으로 변형함 #
 
 global src_dir
-src_dir = '../dataset/Barrier_np_old'
+src_dir = '../dataset/voyagerExtended'
+# wanted = ['dog', 'wheelchair', 'stroller', 'kickboard']
+wanted = ['5', '13', '14', '15']
 
 ##########################################################
 
@@ -32,7 +35,21 @@ for type in types:
     target_image_path = target_dir+'/'+type+'/images/'   
 
     labels = os.listdir(src_label_path)
+
     for label in labels:
+        save = False
+        l = open(f'{src_label_path}{label}', 'r')
+        lines = l.readlines()
+        for line in lines:
+            class_num = line[0]
+            if class_num in wanted:
+                save = True
+                break
+        l.close()
+
+        if not save:
+            continue
+
         image = label[:-4]
         # print(image)
         if os.path.exists(src_image_path+image+'.jpg'):

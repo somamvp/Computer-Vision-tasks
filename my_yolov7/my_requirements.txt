@@ -13,7 +13,7 @@ scipy>=1.4.1
 
 # torch, torchvision은 RTX3090에 맞춘 버전임
 # https://yjs-program.tistory.com/260
---find-links https://yjs-program.tistory.com/260
+--find-links https://download.pytorch.org/whl/torch_stable.html
 torch==1.7.1+cu110
 torchvision==0.8.2+cu110
 

@@ -1,7 +1,15 @@
 {
 	"tmp":{
-		"Original" : ["Braille_Block"],
-		"Label":{"Braille_Block":0}
+		"Original" : ["dog","wheelchair","stroller","kickboard"],
+		"Label":{
+			"dog":5,
+			"wheelchair":13,
+			"stroller":14,
+			"kickboard":15
+		},
+		"Mapping" : {
+			"dog":"dog","wheelchair":"wheelchair","stroller":"stroller","kickboard":"kickboard"
+		}
 	},
 	"Final":{
 		"Original" : ["Zebra_Cross","R_Signal","G_Signal","Braille_Block","person","dog","tree","car","bus","truck","motorcycle","bicycle",

@@ -3,8 +3,7 @@
 
 global src_dir
 src_dir = '../dataset/voyagerExtended'
-# wanted = ['dog', 'wheelchair', 'stroller', 'kickboard']
-wanted = ['5', '13', '14', '15']
+wanted = ['13','14','15','17','18','19','21','22','23','24','26']
 
 ##########################################################
 
@@ -41,7 +40,7 @@ for type in types:
         l = open(f'{src_label_path}{label}', 'r')
         lines = l.readlines()
         for line in lines:
-            class_num = line[0]
+            class_num = line.split()[0]
             if class_num in wanted:
                 save = True
                 break

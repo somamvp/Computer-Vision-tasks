@@ -11,6 +11,7 @@ from PIL import Image
 # with open('test.yaml', 'w') as f:
 #     yaml.dump(con,f, default_flow_style=None, width=70)
 
+
 conf = {}
 conf['a']=[1,2]
 print(type(conf))

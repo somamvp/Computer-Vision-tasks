@@ -24,7 +24,7 @@ target_dir = '../dataset/Dobo_parsed'
 classes={}  # Key : class name, Value : int allocated to that class
 cases={}  # Key : class name, Value : number of its bbox
 train_val_test=[0,0,0]  # Number of each type of data [train, val, test]
-img_box=[0,0,0]   # Number of total [images, bboxes, tiny_boxes]
+img_box = [0, 0, 0]   # Number of total [images, bboxes, tiny_boxes]
 
 from PIL import Image
 import os
@@ -101,7 +101,7 @@ def parser_0():
     for upper_folder in upper_list:
         lower_list = os.listdir(src_dir+'/'+upper_folder)
         fn+=1
-        print("Processing %s ...  (%d/%d)"%(upper_folder,fn,len(upper_list)))
+        print("Processing %s ...  (%d/%d)"%(upper_folder, fn, len(upper_list)))
     
         for lower_folder in lower_list:
             folder = upper_folder+'/'+lower_folder

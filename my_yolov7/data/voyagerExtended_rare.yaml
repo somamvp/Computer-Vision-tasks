@@ -1,0 +1,43 @@
+train: ../../dataset/voyagerExtended_rare/train/images
+val: ../../dataset/voyagerExtended_rare/val/images
+test: ../../dataset/voyagerExtended_rare/test/images
+
+nc: 27
+names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'none', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
+# Dataset statistics: 
+Total imgs: 20322
+Train-Val-Test: [3855,980,15487]
+Blank images ignored: 0
+
+Too small boxes ignored: 0
+Too large/odd boxes ignored: 0
+
+Total Bbox: 160196
+Bbox distribution:
+    Zebra_Cross: 1813
+    R_Signal: 283
+    G_Signal: 180
+    Braille_Block: 4287
+    person: 38138
+    dog: 9614
+    tree: 8749
+    car: 39184
+    bus: 2000
+    truck: 6140
+    motorcycle: 3008
+    bicycle: 3767
+    none: Invalid
+    wheelchair: 3660
+    stroller: 5657
+    kickboard: 3838
+    bollard: 6674
+    manhole: 3954
+    labacon: 1599
+    bench: 1941
+    barricade: 1698
+    pot: 4133
+    table: 568
+    chair: 1700
+    fire_hydrant: 522
+    movable_signage: 6262
+    bus_stop: 827

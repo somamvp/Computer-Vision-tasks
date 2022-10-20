@@ -1,6 +1,6 @@
-train: ../../../dataset/voyagerExtra/train/images
-val: ../../../dataset/voyagerExtra/val/images
-test: ../../../dataset/voyagerExtra/test/images
+train: ../../dataset/voyagerExtra/train/images
+val: ../../dataset/voyagerExtra/val/images
+test: ../../dataset/voyagerExtra/test/images
 
 nc: 27
 names: [Zebra_Cross, R_Signal, G_Signal, Braille_Block, person, dog, tree, car, bus, truck, motorcycle, bicycle, none, wheelchair, stroller, kickboard, bollard, manhole, labacon, bench, barricade, pot, table, chair, fire_hydrant, movable_signage, bus_stop]

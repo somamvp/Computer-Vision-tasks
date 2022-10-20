@@ -1,6 +1,6 @@
-train: ../../dataset/Chair_np/train/images
-val: ../../dataset/Chair_np/val/images
-test: ../../dataset/Chair_np/test/images
+train: ../../dataset/Chair2_np/train/images
+val: ../../dataset/Chair2_np/val/images
+test: ../../dataset/Chair2_np/test/images
 
 nc: 27
 names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'NA', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']

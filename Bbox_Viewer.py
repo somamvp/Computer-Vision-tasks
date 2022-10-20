@@ -1,7 +1,7 @@
 import os, json
 from PIL import Image, ImageDraw, ImageFont
 
-src_dir = '../dataset/Chair_np/train/'
+src_dir = '../dataset/Chair_sample_parsed/train/'
 find_all = False
 show_others = True
 data_name='Final'
@@ -19,7 +19,7 @@ wanted = {
 # '0':"Zebra_Cross",
 # '1':"R_Signal",
 # '2':"G_Signal",
-# '3':"Braille_Block",
+'3':"Braille_Block",
 # '4':"person",
 # '5':"dog",
 # '6':"tree",

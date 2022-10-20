@@ -1,12 +1,12 @@
 ######################################################
 # ------------------ Parameters -------------------- #
-image_process = False
+image_process = True
 imgsize = [640, 360]
 if_compress = False
 jpg_quality = 50  # value: 1~95  (default=75)
 force_classing = True
 
-src_dir = '../dataset/Barrier'
+src_dir = '../dataset/Chair2'
 target_dir = src_dir+'_np'
 
 # Ver4 변경사항 :
@@ -192,7 +192,7 @@ def parser_0():
     return
 
 def parser_1():
-    mod=3  # 3장 중 한장씩만 입력됨
+    # mod=3  # 3장 중 한장씩만 입력됨
     global nc
     for type in ['/train','/val']:
         fn=0
@@ -217,9 +217,9 @@ def parser_1():
 
             iter=0
             for label in label_list:
-                iter = (iter+1)%mod
-                if iter!=mod-1:
-                    continue
+                # iter = (iter+1)%mod
+                # if iter!=mod-1:
+                #     continue
                 img_box[0] += 1
                 with open(label_path+'/'+label, 'r') as l:
                     j = json.load(l)
@@ -235,8 +235,10 @@ def parser_1():
                                 classes[class_name] = nc
                                 cases[class_name] = 1
                                 nc+=1
-                            else:
+                            elif class_name in list(classes.keys()):
                                 cases[class_name] += 1
+                            else:
+                                continue
                             points = feature["points"]
 
                             # Image size is 1920*1080

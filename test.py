@@ -10,9 +10,14 @@ import yaml
 # with open('test.yaml', 'w') as f:
 #     yaml.dump(con,f, default_flow_style=None, width=70)
 
-conf = {}
-conf['a']=[1,2]
-print(type(conf))
-print(type(conf['a']))
-print(type(conf).__name__=='list')
-print(type(conf['a'])==type([]))
+
+result = [{'name':'abc', 'x':3, 'y':5, 'depth':0.2},
+ {'name':'xyz', 'x':6, 'y':1, 'depth':0.9},
+{'name':'qqq', 'x':7, 'y':1, 'depth':0.9}]
+
+for li in result:
+    if li['x']>4:
+        result.remove(li)
+
+print(result)
+# print(sorted(result, key=lambda x: x['y'], reverse=False))

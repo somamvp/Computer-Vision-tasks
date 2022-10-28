@@ -1,0 +1,43 @@
+train: ../../dataset/Wesee_np_clear/train/images
+val: ../../dataset/Wesee_np_clear/val/images
+test: ../../dataset/Wesee_np_clear/test/images
+
+nc: 27
+names: ['Zebra_Cross', 'R_Signal', 'G_Signal', 'Braille_Block', 'person', 'dog', 'tree', 'car', 'bus', 'truck', 'motorcycle', 'bicycle', 'none', 'wheelchair', 'stroller', 'kickboard', 'bollard', 'manhole', 'labacon', 'bench', 'barricade', 'pot', 'table', 'chair', 'fire_hydrant', 'movable_signage', 'bus_stop']
+# Dataset statistics: 
+Total imgs: 10655
+Train-Val-Test: [9408,955,292]
+Blank images ignored: 0
+
+Too small boxes ignored: 0
+Too large/odd boxes ignored: 0
+
+Total Bbox: 21398
+Bbox distribution:
+    Zebra_Cross: 10622
+    R_Signal: 7832
+    G_Signal: 2944
+    Braille_Block: Invalid
+    person: Invalid
+    dog: Invalid
+    tree: Invalid
+    car: Invalid
+    bus: Invalid
+    truck: Invalid
+    motorcycle: Invalid
+    bicycle: Invalid
+    none: Invalid
+    wheelchair: Invalid
+    stroller: Invalid
+    kickboard: Invalid
+    bollard: Invalid
+    manhole: Invalid
+    labacon: Invalid
+    bench: Invalid
+    barricade: Invalid
+    pot: Invalid
+    table: Invalid
+    chair: Invalid
+    fire_hydrant: Invalid
+    movable_signage: Invalid
+    bus_stop: Invalid

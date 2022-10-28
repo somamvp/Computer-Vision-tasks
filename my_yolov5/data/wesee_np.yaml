@@ -1,4 +1,4 @@
-path: ../../dataset/Wesee_parsed
+path: ../../dataset/Wesee_np
 train: train/images
 val: val/images
 test: test/images

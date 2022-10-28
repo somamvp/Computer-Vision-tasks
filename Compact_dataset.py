@@ -2,8 +2,9 @@
 # 에서 원하는 라벨이 있는 데이터만 남기는 작업으로 변형함 #
 
 global src_dir
-src_dir = '../dataset/voyagerExtended'
-wanted = ['13','14','15','17','18','19','21','22','23','24','26']
+src_dir = '../dataset/Wesee_np'
+# wanted = ['13','14','15','17','18','19','21','22','23','24','26']  # 소수 오브젝트
+wanted = ['1','2']  #신호등
 
 ##########################################################
 
@@ -14,7 +15,7 @@ if not os.path.exists(src_dir):
 
 target_dir = src_dir+'_clear'
 types = ['test','train','val']
-
+    
 if os.path.exists(target_dir):
     ans = input("기존 데이터셋을 지우고 계속합니다. [y,n] : ")
     if(ans!='y'):
@@ -36,6 +37,8 @@ for type in types:
     labels = os.listdir(src_label_path)
 
     for label in labels:
+        if 'custom' in label:
+            continue
         save = False
         l = open(f'{src_label_path}{label}', 'r')
         lines = l.readlines()

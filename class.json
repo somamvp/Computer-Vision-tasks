@@ -1,16 +1,40 @@
 {
-	"tmp":{
-		"Original" : ["Zebra_Cross","R_Signal","G_Signal","Braille_Block","person","dog","tree","car","bus","truck","motorcycle","bicycle",
+	"Extra":{
+		"Original" : ["Braille_Block","person","dog","tree","car","bus","truck","motorcycle","bicycle",
 			"none","wheelchair","stroller","kickboard","bollard","manhole","labacon","bench","barricade","pot","table","chair","fire_hydrant",
 			"movable_signage","bus_stop"],
 		"Label":{
+			"Braille_Block":3,
+			"person":4,
 			"dog":5,
+			"tree":6,
+			"car":7,
+			"bus":8,
+			"truck":9,
+			"motorcycle":10,
+			"bicycle":11,
+			"none":12,
 			"wheelchair":13,
 			"stroller":14,
-			"kickboard":15
+			"kickboard":15,
+			"bollard":16,
+			"manhole":17,
+			"labacon":18,
+			"bench":19,
+			"barricade":20,
+			"pot":21,
+			"table":22,
+			"chair":23,
+			"fire_hydrant":24,
+			"movable_signage":25,
+			"bus_stop":26
 		},
 		"Mapping" : {
-			"dog":"dog","wheelchair":"wheelchair","stroller":"stroller","kickboard":"kickboard"
+			"Braille_Block":"Braille_Block","person":"person",
+			"dog":"dog","tree":"tree","car":"car","bus":"bus","truck":"truck","motorcycle":"motorcycle","bicycle":"bicycle",
+			"none":"none","wheelchair":"wheelchair","stroller":"stroller","kickboard":"kickboard","bollard":"bollard","manhole":"manhole",
+			"labacon":"labacon","bench":"bench","barricade":"barricade","pot":"pot","table":"table","chair":"chair","fire_hydrant":"fire_hydrant",
+			"movable_signage":"movable_signage","bus_stop":"bus_stop"
 		}
 	},
 	"Final":{
